@@ -26,7 +26,9 @@ public class MockData {
     private Long id;
 
 
-    @Setter @Column(nullable = false) private MockDataType mockDataType;
+    @Setter @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MockDataType mockDataType;
 
     @Setter @Column(nullable = false) private String mockDataValue;
 
