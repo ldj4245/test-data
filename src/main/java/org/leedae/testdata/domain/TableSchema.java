@@ -27,13 +27,15 @@ public class TableSchema extends AuditingFields {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter private String schemaName;
-    @Setter private String userId;
+    @Setter @Column(nullable = false) private String schemaName;
+    @Setter @Column(nullable = false) private String userId;
+
     @Setter private LocalDateTime exportedAt;
 
 
 
     @ToString.Exclude
+    @OrderBy("fieldOrder ASC ")
     @OneToMany(mappedBy = "tableSchema", cascade = CascadeType.ALL, orphanRemoval = true)
     private final Set<SchemaField> schemaFields = new LinkedHashSet<>();
 
@@ -50,8 +52,8 @@ public class TableSchema extends AuditingFields {
     }
 
     public void addSchemaField(SchemaField schemaField){
-        schemaFields.add(schemaField);
         schemaField.setTableSchema(this);
+        schemaFields.add(schemaField);
     }
 
     public void addSchemaFields(Collection<SchemaField> schemaFields){
