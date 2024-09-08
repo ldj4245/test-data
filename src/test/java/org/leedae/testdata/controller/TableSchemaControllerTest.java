@@ -4,12 +4,18 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.leedae.testdata.config.SecurityConfig;
+import org.leedae.testdata.domain.constant.MockDataType;
+import org.leedae.testdata.dto.request.SchemaFieldRequest;
+import org.leedae.testdata.dto.request.TableSchemaRequest;
+import org.leedae.testdata.util.FormDataEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,9 +24,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Disabled("아직 구현이 없으므로 비활성화.")
 @DisplayName("[Controller] - 테이블 스키마 컨트롤러 테스트")
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, FormDataEncoder.class})
 @WebMvcTest
-public record TableSchemaControllerTest(@Autowired MockMvc mvc) {
+public record TableSchemaControllerTest(
+        @Autowired MockMvc mvc,
+        @Autowired FormDataEncoder formDataEncoder
+) {
 
     @DisplayName("[GET] 테이블 스키마 페이지 -> 테이블 스키마 뷰 (정상)")
     @Test
@@ -38,11 +47,21 @@ public record TableSchemaControllerTest(@Autowired MockMvc mvc) {
     @Test
     void givenTableSchemaRequest_whenCreatingOrUpdating_thenRedirectsToTableSchemaView() throws Exception{
         //Given
+        TableSchemaRequest request = TableSchemaRequest.of(
+                "test_schema",
+                "홍길동",
+                List.of(
+                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER,1,0,null,null),
+                        SchemaFieldRequest.of("name", MockDataType.NAME,2,10,null,null),
+                        SchemaFieldRequest.of("age", MockDataType.NUMBER,3,20,null,null)
+                )
+
+        );
 
         //When & Then
         mvc.perform(
                 post("/table-schema")
-                        .content("sample data") //TODO : 여기는 나중에 제대로 바꿔야 함
+                        .content(formDataEncoder.encode(request))
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .with(csrf())
 
