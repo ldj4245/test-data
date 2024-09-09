@@ -9,6 +9,6 @@ public class MainController {
 
     @GetMapping("/")
     public String root(){
-        return "index";
+        return "forward:/table-schema";
     }
 }
