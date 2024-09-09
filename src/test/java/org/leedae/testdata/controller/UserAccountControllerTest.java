@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Disabled("아직 구현이 없으므로 비활성화.")
 @DisplayName("[Controller] - 회원 컨트롤러 테스트")
 @Import(SecurityConfig.class)
 @WebMvcTest
