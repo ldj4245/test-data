@@ -72,7 +72,7 @@ public record TableSchemaDto(
     }
 
     public TableSchema createEntity() {
-        TableSchema entity =  TableSchema.of(this.schemaName(), this.userId());
+        TableSchema entity =  TableSchema.of(schemaName,userId);
         entity.addSchemaFields(schemaFields.stream().map(SchemaFieldDto::createdEntity).toList());
         return entity;
     }

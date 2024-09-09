@@ -86,12 +86,12 @@ public record SchemaFieldDto(
 
     public SchemaField createdEntity() {
         return SchemaField.of(
-                this.fieldName(),
-                this.mockDataType(),
-                this.fieldOrder(),
-                this.blankPercent(),
-                this.typeOptionJson(),
-                this.forceValue()
+                fieldName,
+                mockDataType,
+                fieldOrder,
+                blankPercent,
+                typeOptionJson,
+                forceValue
         );
     }
 

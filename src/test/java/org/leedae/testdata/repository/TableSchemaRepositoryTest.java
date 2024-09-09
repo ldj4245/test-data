@@ -24,14 +24,15 @@ class TableSchemaRepositoryTest {
 
     @Autowired private TableSchemaRepository sut;
 
-    @DisplayName("사용자별 테이블 스키마를 조회하면 페이징된 테이블 스키마를 반환한다.")
+    @DisplayName("사용자별 식별자와 페이징 정보가 주어지면, 페이징된 테이블 스키마 목록을 반환한다.")
     @Test
-    void givenUserId_whenSelectingTableSchemas_thenReturnsPagedTableSchema() {
+    void givenUserIdAndPagingInfo_whenSelecting_thenReturnsPagedTableSchemas() {
         // given
         var userId = "djkeh";
+        var pageable = Pageable.ofSize(5);
 
         // when
-        Page<TableSchema> result = sut.findByUserId(userId, Pageable.ofSize(5));
+        Page<TableSchema> result = sut.findByUserId(userId, pageable);
 
         // then
         assertThat(result.getContent())
@@ -45,9 +46,9 @@ class TableSchemaRepositoryTest {
 
     }
 
-    @DisplayName("사용자의 테이블 스키마 이름을 조회하면, 테이블 스키마를 반환한다.")
+    @DisplayName("사용자 식별자와 테이블 스키마 이름이 주어지면, 테이블 스키마를 반환한다.")
     @Test
-    void givenUserIdAndSchemaName_when_then2() {
+    void givenUserIdAndSchemaName_whenSelecting_thenReturnsTableSchema() {
         // given
         var userId = "djkeh";
         var schemaName = "test_schema1";
@@ -62,9 +63,9 @@ class TableSchemaRepositoryTest {
                 .hasFieldOrPropertyWithValue("schemaName", schemaName);
     }
 
-    @DisplayName("사용자의 테이블 스키마 이름이 주어지면, 테이블 스키마를 삭제한다.")
+    @DisplayName("사용자 식별자와 테이블 스키마 이름이 주어지면, 테이블 스키마를 삭제한다.")
     @Test
-    void givenUserIdAndSchemaName_whenDeletingTableSchema_thenDeletes() {
+    void givenUserIdAndSchemaName_whenDeleting_thenDeletesTableSchema() {
 
         // given
         var userId = "djkeh";
