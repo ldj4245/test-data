@@ -10,6 +10,7 @@ import org.leedae.testdata.domain.constant.MockDataType;
 import org.leedae.testdata.dto.request.SchemaFieldRequest;
 import org.leedae.testdata.dto.request.TableSchemaExportRequest;
 import org.leedae.testdata.dto.request.TableSchemaRequest;
+import org.leedae.testdata.dto.security.GithubUser;
 import org.leedae.testdata.util.FormDataEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -34,7 +36,7 @@ public record TableSchemaControllerTest(
         @Autowired FormDataEncoder formDataEncoder,
         @Autowired ObjectMapper mapper
 
-        ) {
+) {
 
     @DisplayName("[GET] 테이블 스키마 조회, 비로그인 최초 진입 (정상)")
     @Test
@@ -55,12 +57,14 @@ public record TableSchemaControllerTest(
     @Test
     void givenAuthenticatedUserAndSchemaName_whenRequesting_thenShowsTableSchemaView() throws Exception {
         // Given
+        var githubUser = new GithubUser("test-id", "test-name", "test@gmail.com");
         var schemaName = "test_schema";
 
         // When & Then
         mvc.perform(
                         get("/table-schema")
                                 .queryParam("schemaName", schemaName)
+                                .with(oauth2Login().oauth2User(githubUser))
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
@@ -74,25 +78,28 @@ public record TableSchemaControllerTest(
 
     @DisplayName("[POST] 테이블 스키마 생성, 변경 (정상)")
     @Test
-    void givenTableSchemaRequest_whenCreatingOrUpdating_thenRedirectsToTableSchemaView() throws Exception{
+    void givenTableSchemaRequest_whenCreatingOrUpdating_thenRedirectsToTableSchemaView() throws Exception {
         //Given
+        var githubUser = new GithubUser("test-id", "test-name", "test@gmail.com");
+
         TableSchemaRequest request = TableSchemaRequest.of(
                 "test_schema",
                 "홍길동",
                 List.of(
-                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER,1,0,null,null),
-                        SchemaFieldRequest.of("name", MockDataType.NAME,2,10,null,null),
-                        SchemaFieldRequest.of("age", MockDataType.NUMBER,3,20,null,null)
+                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
+                        SchemaFieldRequest.of("name", MockDataType.NAME, 2, 10, null, null),
+                        SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
                 )
 
         );
 
         //When & Then
         mvc.perform(
-                post("/table-schema")
-                        .content(formDataEncoder.encode(request))
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .with(csrf())
+                        post("/table-schema")
+                                .content(formDataEncoder.encode(request))
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .with(csrf())
+                                .with(oauth2Login().oauth2User(githubUser))
 
                 )
                 .andExpect(status().is3xxRedirection())
@@ -104,14 +111,31 @@ public record TableSchemaControllerTest(
     @Test
     void givenAuthenticatedUser_whenRequesting_thenShowsMySchemasView() throws Exception {
         //Given
+        var githubUser = new GithubUser("test-id", "test-name", "test@gmail.com");
 
         //When & Then
-        mvc.perform(get("/table-schema/my-schemas"))
+        mvc.perform(
+                        get("/table-schema/my-schemas")
+                                .with(oauth2Login().oauth2User(githubUser))
+                )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(model().attributeExists("tableSchemas"))
                 .andExpect(view().name("my-schemas"));
     }
+
+    @DisplayName("[GET] 내 스키마 목록 조회 (비로그인)")
+    @Test
+    void givenNothing_whenRequesting_thenReturnsToLogin() throws Exception {
+        //Given
+
+
+        //When & Then
+        mvc.perform(get("/table-schema/my-schemas"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/oauth2/authorization/github"));
+    }
+
 
     @DisplayName("[POST] 내 스키마 삭제 (정상)")
     @Test
@@ -121,9 +145,9 @@ public record TableSchemaControllerTest(
 
         //When & Then
         mvc.perform(
-                post("/table-schema/my-schemas/{schemaName}",schemaName)
-                        .with(csrf())
-        )
+                        post("/table-schema/my-schemas/{schemaName}", schemaName)
+                                .with(csrf())
+                )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/table-schema/my-schemas"));
     }
@@ -137,18 +161,18 @@ public record TableSchemaControllerTest(
                 10,
                 ExportFileType.JSON,
                 List.of(
-                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER,1,0,null,null),
-                        SchemaFieldRequest.of("name", MockDataType.NAME,2,10,"option","well"),
-                        SchemaFieldRequest.of("age", MockDataType.NUMBER,3,20,null,null)
+                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
+                        SchemaFieldRequest.of("name", MockDataType.NAME, 2, 10, "option", "well"),
+                        SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
                 )
         );
-        String queryParam = formDataEncoder.encode(request,false);
+        String queryParam = formDataEncoder.encode(request, false);
 
         //When & Then
         mvc.perform(get("/table-schema/export?" + queryParam))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=table-schema.txt"))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=table-schema.txt"))
                 .andExpect(content().json(mapper.writeValueAsString(request))); //TODO: 나중에 데이터 바꿔야 함
     }
 

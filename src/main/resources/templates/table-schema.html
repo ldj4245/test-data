@@ -16,7 +16,12 @@
     <nav>
       <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-sky-600 mx-2">내 스키마</a>
       <a th:href="@{/my-account}" class="text-gray-600 hover:text-sky-600 mx-2">내 정보</a>
-      <a th:href="'#'" class="text-gray-600 hover:text-sky-600 mx-2">로그인</a>
+
+      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
+      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2">
+        <span sec:authentication="principal.name" class="text-gray-400 text-sm mx-1">username</span>
+        로그아웃
+      </a>
     </nav>
   </div>
 </header>
@@ -105,7 +110,7 @@
 
 <footer class="bg-white shadow w-full mt-auto">
   <div class="container mx-auto px-4 py-6 text-center text-gray-600">
-    © 2024 genieLee, Inc
+    © 2024 GenieLee, Inc
   </div>
 </footer>
 
@@ -133,7 +138,7 @@
         enrollDeleteRowEvent(btn, schemaFieldList);
     });
 
-    schemaFieldList.on('updated', list => { console.log(list.items); resetData(list); });
+    schemaFieldList.on('updated', list => resetData(list));
     document.getElementById('add-row').addEventListener('click', () => {
         schemaFieldList.add({});
         const lastRow = schemaFieldList.items.at(-1).elm
