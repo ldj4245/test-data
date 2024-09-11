@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -89,5 +90,22 @@ class TableSchemaServiceTest {
                 .hasMessage("테이블 스키마가 없습니다 - userId: " + userId + ", schemaName: " + schemaName);
         then(tableSchemaRepository).should().findByUserIdAndSchemaName(userId, schemaName);
     }
+
+    @DisplayName("테이블 스키마 정보가 주어지면, 테이블 스키마를 추가한다.")
+    @Test
+    void givenTableSchema_whenInserting_thenCreatesTableSchema(){
+        //Given
+        TableSchemaDto dto = TableSchemaDto.of("table1", "userId", null, Set.of());
+        given(tableSchemaRepository.save(dto.createEntity())).willReturn(null);
+        //When
+        sut.saveSchema(dto);
+
+
+        //Then
+        then(tableSchemaRepository).should().save(dto.createEntity());
+
+    }
+
+
 
 }

@@ -53,11 +53,14 @@ public class TableSchemaController {
 
     @PostMapping("/table-schema")
     public String createOrUpdateTableSchema(
+            @AuthenticationPrincipal GithubUser githubUser,
             TableSchemaRequest tableSchemaRequest,
             RedirectAttributes redirectAttrs
     ) {
+        tableSchemaService.saveSchema(tableSchemaRequest.toDto(githubUser.id()));
         redirectAttrs.addFlashAttribute("tableSchemaRequest", tableSchemaRequest);
-
+        //addFlashAttribute는 저장된 정보를 그대로 보여줘야 하므로 사용했음.
+        
         return "redirect:/table-schema";
     }
 
