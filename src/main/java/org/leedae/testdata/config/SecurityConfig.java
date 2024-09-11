@@ -20,7 +20,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         return http
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/",
+                                        "table-schema",
+                                        "table-schema/export"
+                                ).permitAll()
+                                .anyRequest().authenticated()
+
+                )
+                .oauth2Login(withDefaults())
                 .logout(logout -> logout.logoutSuccessUrl("/"))
                 .build();
     }
