@@ -37,11 +37,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TableSchemaController.class)
 class TableSchemaControllerTest {
 
-    @Autowired private MockMvc mvc;
-    @Autowired private FormDataEncoder formDataEncoder;
-    @Autowired private ObjectMapper mapper;
+    @Autowired
+    private MockMvc mvc;
+    @Autowired
+    private FormDataEncoder formDataEncoder;
+    @Autowired
+    private ObjectMapper mapper;
 
-    @MockBean private TableSchemaService tableSchemaService;
+    @MockBean
+    private TableSchemaService tableSchemaService;
 
     @DisplayName("[GET] 테이블 스키마 조회, 비로그인 최초 진입 (정상)")
     @Test
@@ -97,7 +101,7 @@ class TableSchemaControllerTest {
                         SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
                 )
         );
-       willDoNothing().given(tableSchemaService).saveSchema(request.toDto(githubUser.id()));
+        willDoNothing().given(tableSchemaService).upsertTableSchema(request.toDto(githubUser.id()));
 
         // When & Then
         mvc.perform(
@@ -108,9 +112,8 @@ class TableSchemaControllerTest {
                                 .with(oauth2Login().oauth2User(githubUser))
                 )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute("tableSchemaRequest", request))
-                .andExpect(redirectedUrl("/table-schema"));
-        then(tableSchemaService).should().saveSchema(request.toDto(githubUser.id()));
+                .andExpect(redirectedUrlTemplate("/table-schema?schemaName={schemaName}", request.getSchemaName()));
+        then(tableSchemaService).should().upsertTableSchema(request.toDto(githubUser.id()));
     }
 
     @DisplayName("[GET] 내 스키마 목록 조회 (비로그인)")
