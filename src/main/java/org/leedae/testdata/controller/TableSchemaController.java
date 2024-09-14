@@ -12,6 +12,7 @@ import org.leedae.testdata.dto.response.SchemaFieldResponse;
 import org.leedae.testdata.dto.response.SimpleTableSchemaResponse;
 import org.leedae.testdata.dto.response.TableSchemaResponse;
 import org.leedae.testdata.dto.security.GithubUser;
+import org.leedae.testdata.service.SchemaExportService;
 import org.leedae.testdata.service.TableSchemaService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,7 @@ import java.util.List;
 public class TableSchemaController {
 
     private final TableSchemaService tableSchemaService;
+    private final SchemaExportService schemaExportService;
     private final ObjectMapper mapper;
 
     @GetMapping("/table-schema")
@@ -90,11 +92,17 @@ public class TableSchemaController {
     }
 
     @GetMapping("/table-schema/export")
-    public ResponseEntity<String> exportTableSchema(TableSchemaExportRequest tableSchemaExportRequest) {
+    public ResponseEntity<String> exportTableSchema(
+            @AuthenticationPrincipal GithubUser githubUser,
+            TableSchemaExportRequest tableSchemaExportRequest) {
+        String body = schemaExportService.export
+                        (tableSchemaExportRequest.getFileType(),
+                         tableSchemaExportRequest.toDto(githubUser != null ? githubUser.id() : null),
+                         tableSchemaExportRequest.getRowCount());
         String filename = tableSchemaExportRequest.getSchemaName() + "." + tableSchemaExportRequest.getFileType().name().toLowerCase();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-                .body(json(tableSchemaExportRequest)); // TODO: 나중에 데이터 바꿔야 함
+                .body(body);
     }
 
 
@@ -111,12 +119,5 @@ public class TableSchemaController {
         );
     }
 
-    private String json(Object object) {
-        try {
-            return mapper.writeValueAsString(object);
-        } catch (JsonProcessingException jpe) {
-            throw new RuntimeException(jpe);
-        }
-    }
 
 }
