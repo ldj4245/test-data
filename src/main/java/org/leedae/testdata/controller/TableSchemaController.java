@@ -19,11 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -105,6 +101,32 @@ public class TableSchemaController {
                 .body(body);
     }
 
+    @GetMapping("/api/table-schema/{schemaName}")
+    public ResponseEntity<TableSchemaResponse> getTableSchema(
+            @AuthenticationPrincipal GithubUser githubUser,
+            @PathVariable String schemaName
+    ) {
+        TableSchemaResponse tableSchema = TableSchemaResponse.fromDto(tableSchemaService.loadMySchema(githubUser.id(), schemaName));
+        return ResponseEntity.ok(tableSchema);
+    }
+
+    @PostMapping("/api/table-schema")
+    public ResponseEntity<Void> createOrUpdateTableSchema(
+            @AuthenticationPrincipal GithubUser githubUser,
+            @RequestBody TableSchemaRequest tableSchemaRequest
+    ) {
+        tableSchemaService.upsertTableSchema(tableSchemaRequest.toDto(githubUser.id()));
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/api/table-schema/{schemaName}")
+    public ResponseEntity<Void> deleteTableSchema(
+            @AuthenticationPrincipal GithubUser githubUser,
+            @PathVariable String schemaName
+    ) {
+        tableSchemaService.deleteTableSchema(githubUser.id(), schemaName);
+        return ResponseEntity.noContent().build();
+    }
 
     private TableSchemaResponse defaultTableSchema(String schemaName) {
         return new TableSchemaResponse(

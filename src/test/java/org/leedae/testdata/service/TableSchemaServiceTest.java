@@ -154,9 +154,54 @@ class TableSchemaServiceTest {
         then(tableSchemaRepository).should().deleteByUserIdAndSchemaName(userId, schemaName);
     }
 
+    @DisplayName("사용자 ID와 스키마 이름이 주어지면, 테이블 스키마를 반환한다.")
+    @Test
+    void givenUserIdAndSchemaName_whenGettingTableSchema_thenReturnsTableSchema() {
+        // Given
+        String userId = "userId";
+        String schemaName = "table1";
+        TableSchema tableSchema = TableSchema.of(schemaName, userId);
+        given(tableSchemaRepository.findByUserIdAndSchemaName(userId, schemaName)).willReturn(Optional.of(tableSchema));
 
+        // When
+        TableSchemaDto result = sut.getTableSchema(userId, schemaName);
 
+        // Then
+        assertThat(result)
+                .hasFieldOrPropertyWithValue("schemaName", schemaName)
+                .hasFieldOrPropertyWithValue("userId", userId);
+        then(tableSchemaRepository).should().findByUserIdAndSchemaName(userId, schemaName);
+    }
 
+    @DisplayName("테이블 스키마 정보가 주어지면, 테이블 스키마를 생성하거나 수정한다.")
+    @Test
+    void givenTableSchema_whenCreatingOrUpdating_thenCreatesOrUpdatesTableSchema() {
+        // Given
+        TableSchemaDto dto = TableSchemaDto.of("table1", "userId", null, Set.of());
+        TableSchema existingTableSchema = TableSchema.of(dto.schemaName(), dto.userId());
+        given(tableSchemaRepository.findByUserIdAndSchemaName(dto.userId(), dto.schemaName())).willReturn(Optional.of(existingTableSchema));
+        given(tableSchemaRepository.save(dto.createEntity())).willReturn(null);
 
+        // When
+        sut.createOrUpdateTableSchema(dto);
 
+        // Then
+        then(tableSchemaRepository).should().findByUserIdAndSchemaName(dto.userId(), dto.schemaName());
+        then(tableSchemaRepository).should().save(dto.updateEntity(existingTableSchema));
+    }
+
+    @DisplayName("사용자 ID와 스키마 이름이 주어지면, 테이블 스키마를 삭제한다.")
+    @Test
+    void givenUserIdAndSchemaName_whenDeletingTableSchema_thenDeletesTableSchema() {
+        // Given
+        String userId = "userId";
+        String schemaName = "table1";
+        willDoNothing().given(tableSchemaRepository).deleteByUserIdAndSchemaName(userId, schemaName);
+
+        // When
+        sut.deleteTableSchema(userId, schemaName);
+
+        // Then
+        then(tableSchemaRepository).should().deleteByUserIdAndSchemaName(userId, schemaName);
+    }
 }
