@@ -1,6 +1,5 @@
 package org.leedae.testdata.dto.response;
 
-import org.leedae.testdata.domain.TableSchema;
 import org.leedae.testdata.dto.TableSchemaDto;
 
 import java.util.List;
@@ -20,11 +19,5 @@ public record TableSchemaResponse(
 
     }
 
-    public static TableSchemaResponse fromEntity(TableSchema entity) {
-        return new TableSchemaResponse(
-                entity.getSchemaName(),
-                entity.getUserId(),
-                entity.getSchemaFields().stream().map(SchemaFieldResponse::fromEntity).toList()
-        );
-    }
+
 }

@@ -15,8 +15,9 @@ import java.util.stream.Collectors;
 public class TableSchemaRequest {
     private String schemaName;
     private List<SchemaFieldRequest> schemaFields;
-    private String userId;
 
+
+    //기존엔 TableSchemaRequest 필드에 userId도 포함이 되었지만, 외부에서 따로 주입해줘야 하므로 메서드 인자로 따로 받기
     public TableSchemaDto toDto(String userId){
         return TableSchemaDto.of(
                 schemaName,
