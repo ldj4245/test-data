@@ -13,4 +13,6 @@ public interface TableSchemaRepository extends JpaRepository<TableSchema, Long> 
     Optional<TableSchema> findByUserIdAndSchemaName(String userId, String schemaName);
     void deleteByUserIdAndSchemaName(String userId, String schemaName);
 
+    Optional<TableSchema> findByUserIdAndSchemaName(String userId, String schemaName);
+    void deleteByUserIdAndSchemaName(String userId, String schemaName);
 }

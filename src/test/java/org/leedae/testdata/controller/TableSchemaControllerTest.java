@@ -10,6 +10,7 @@ import org.leedae.testdata.dto.TableSchemaDto;
 import org.leedae.testdata.dto.request.SchemaFieldRequest;
 import org.leedae.testdata.dto.request.TableSchemaExportRequest;
 import org.leedae.testdata.dto.request.TableSchemaRequest;
+import org.leedae.testdata.dto.response.TableSchemaResponse;
 import org.leedae.testdata.dto.security.GithubUser;
 import org.leedae.testdata.service.SchemaExportService;
 import org.leedae.testdata.service.TableSchemaService;
@@ -30,8 +31,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @DisplayName("[Controller] 테이블 스키마 컨트롤러 테스트")
@@ -98,7 +98,8 @@ class TableSchemaControllerTest {
                         SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
                         SchemaFieldRequest.of("name", MockDataType.NAME, 2, 10, null, null),
                         SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
-                )
+                ),
+                githubUser.id()
         );
         willDoNothing().given(tableSchemaService).upsertTableSchema(request.toDto(githubUser.id()));
 
@@ -223,4 +224,70 @@ class TableSchemaControllerTest {
         then(schemaExportService).should().export(request.getFileType(),request.toDto(githubUser.id()),request.getRowCount());
     }
 
+    @DisplayName("[GET] API 테이블 스키마 조회 (정상)")
+    @Test
+    void givenAuthenticatedUserAndSchemaName_whenRequestingApi_thenReturnsTableSchema() throws Exception {
+        // Given
+        var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
+        var schemaName = "test_schema";
+        TableSchemaDto tableSchemaDto = TableSchemaDto.of(schemaName, githubUser.id(), null, Set.of());
+        given(tableSchemaService.getTableSchema(githubUser.id(), schemaName)).willReturn(tableSchemaDto);
+
+        // When & Then
+        mvc.perform(
+                        get("/api/table-schema/{schemaName}", schemaName)
+                                .with(oauth2Login().oauth2User(githubUser))
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.schemaName").value(schemaName))
+                .andExpect(jsonPath("$.userId").value(githubUser.id()));
+        then(tableSchemaService).should().getTableSchema(githubUser.id(), schemaName);
+    }
+
+    @DisplayName("[POST] API 테이블 스키마 생성, 변경 (정상)")
+    @Test
+    void givenAuthenticatedUserAndTableSchemaRequest_whenCreatingOrUpdatingApi_thenReturnsOk() throws Exception {
+        // Given
+        var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
+        TableSchemaRequest request = TableSchemaRequest.of(
+                "test_schema",
+                List.of(
+                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
+                        SchemaFieldRequest.of("name", MockDataType.NAME, 2, 10, null, null),
+                        SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
+                ),
+                githubUser.id()
+        );
+        willDoNothing().given(tableSchemaService).createOrUpdateTableSchema(request.toDto(githubUser.id()));
+
+        // When & Then
+        mvc.perform(
+                        post("/api/table-schema")
+                                .content(mapper.writeValueAsString(request))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .with(csrf())
+                                .with(oauth2Login().oauth2User(githubUser))
+                )
+                .andExpect(status().isOk());
+        then(tableSchemaService).should().createOrUpdateTableSchema(request.toDto(githubUser.id()));
+    }
+
+    @DisplayName("[DELETE] API 테이블 스키마 삭제 (정상)")
+    @Test
+    void givenAuthenticatedUserAndSchemaName_whenDeletingApi_thenReturnsNoContent() throws Exception {
+        // Given
+        var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
+        String schemaName = "test_schema";
+        willDoNothing().given(tableSchemaService).deleteTableSchema(githubUser.id(), schemaName);
+
+        // When & Then
+        mvc.perform(
+                        delete("/api/table-schema/{schemaName}", schemaName)
+                                .with(csrf())
+                                .with(oauth2Login().oauth2User(githubUser))
+                )
+                .andExpect(status().isNoContent());
+        then(tableSchemaService).should().deleteTableSchema(githubUser.id(), schemaName);
+    }
 }

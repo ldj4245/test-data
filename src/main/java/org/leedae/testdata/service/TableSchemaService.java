@@ -52,7 +52,22 @@ public class TableSchemaService {
         tableSchemaRepository.deleteByUserIdAndSchemaName(userId, schemaName);
     }
 
+    @Transactional(readOnly = true)
+    public TableSchemaDto getTableSchema(String userId, String schemaName) {
+        return tableSchemaRepository.findByUserIdAndSchemaName(userId, schemaName)
+                .map(TableSchemaDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException("테이블 스키마가 없습니다 - userId: " + userId + ", schemaName: " + schemaName));
+    }
 
+    public void createOrUpdateTableSchema(TableSchemaDto dto) {
+        tableSchemaRepository.findByUserIdAndSchemaName(dto.userId(), dto.schemaName())
+                .ifPresentOrElse(
+                        entity -> tableSchemaRepository.save(dto.updateEntity(entity)),
+                        () -> tableSchemaRepository.save(dto.createEntity())
+                );
+    }
 
-
+    public void deleteTableSchema(String userId, String schemaName) {
+        tableSchemaRepository.deleteByUserIdAndSchemaName(userId, schemaName);
+    }
 }
