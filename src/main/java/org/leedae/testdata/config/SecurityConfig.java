@@ -20,14 +20,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         return http
+                .csrf(csrf -> csrf.disable())  // CSRF 보호 비활성화
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                                 .requestMatchers(
                                         HttpMethod.GET,
                                         "/",
-                                        "table-schema",
-                                        "table-schema/export"
+                                        "/table-schema",
+                                        "/table-schema/export"
                                 ).permitAll()
+                                .requestMatchers(
+                                        "/api/preview"
+                                ).permitAll()  // HttpMethod 제한 없이 모든 메서드 허용
                                 .anyRequest().authenticated()
 
                 )
