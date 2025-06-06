@@ -47,7 +47,8 @@ public class TableSchemaController {
                 defaultTableSchema(schemaName);
 
         model.addAttribute("tableSchema", tableSchema);
-        model.addAttribute("mockDataTypes", MockDataType.toObjects());
+        model.addAttribute("mockDataTypes", MockDataType.toObjects()); // 기존 방식 유지 (하위 호환성)
+        model.addAttribute("groupedMockDataTypes", MockDataType.toGroupedObjects()); // 카테고리별 그룹화된 데이터 타입 추가
         model.addAttribute("fileTypes", Arrays.stream(ExportFileType.values()).toList());
 
         return "table-schema";

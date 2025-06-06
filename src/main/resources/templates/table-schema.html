@@ -5,21 +5,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>테스트 데이터 생성기 - 테이블 스키마</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            secondary: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <style>
+    .field-card {
+      transition: all 0.2s ease-in-out;
+      border: 1px solid #e2e8f0;
+    }
+    .field-card:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .type-icon {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-900 flex flex-col min-h-screen">
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
 
 <header class="bg-white shadow">
-  <div class="container mx-auto px-4 py-6 flex justify-between items-center">
-    <a th:href="@{/}" class="text-2xl font-bold text-sky-600">테스트 데이터 생성기</a>
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a th:href="@{/}" class="text-2xl font-bold text-primary-600">테스트 데이터 생성기</a>
     <nav>
-      <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-sky-600 mx-2">내 스키마</a>
-      <a th:href="@{/my-account}" class="text-gray-600 hover:text-sky-600 mx-2">내 정보</a>
+      <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-primary-600 mx-2">내 스키마</a>
+      <a th:href="@{/my-account}" class="text-gray-600 hover:text-primary-600 mx-2">내 정보</a>
 
-      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
-      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2">
+      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
+      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2">
         <span sec:authentication="principal.name" class="text-gray-400 text-sm mx-1">username</span>
         로그아웃
       </a>
@@ -28,97 +80,320 @@
 </header>
 
 <main class="container mx-auto px-4 py-8 flex-grow">
-  <form name="table-schema-form" th:action="@{/table-schema}" method="post">
-    <section class="bg-white shadow rounded-lg p-6 mb-6" th:object="${tableSchema}">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">테이블 스키마 만들기</h2>
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- 왼쪽 패널: 스키마 설정 -->
+    <div class="w-full lg:w-2/3">
+      <form name="table-schema-form" th:action="@{/table-schema}" method="post">
+        <section class="bg-white shadow-sm rounded-lg p-6 mb-6" th:object="${tableSchema}">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <i class="fas fa-table text-primary-500 mr-2"></i>
+            테이블 스키마 만들기
+          </h2>
 
-      <div class="flex items-center space-x-4 mb-4">
-        <label for="schemaName" class="block text-sm font-medium text-gray-500 w-24">테이블명</label>
-        <input type="text" id="schemaName" th:field="*{schemaName}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-      </div>
+          <div class="flex items-center space-x-4 mb-6">
+            <label for="schemaName" class="block text-sm font-medium text-gray-500 w-24">테이블명</label>
+            <input type="text" id="schemaName" th:field="*{schemaName}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+          </div>
 
-      <hr class="mb-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-700">필드 정의</h3>
+            <button type="button" id="add-row" class="flex items-center bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600">
+              <i class="fas fa-plus mr-2"></i> 필드 추가
+            </button>
+          </div>
 
-      <div class="grid grid-cols-5 gap-4 mb-4">
-        <div class="block text-sm font-medium text-gray-400">Field Name</div>
-        <div class="block text-sm font-medium text-gray-400">Type</div>
-        <div class="block text-sm font-medium text-gray-400">Blank</div>
-        <div class="block text-sm font-medium text-gray-400">Options</div>
-        <div class="block text-sm font-medium text-gray-400">직접 입력</div>
-      </div>
-      <div id="schema-field-list">
-        <ul id="field-list" class="list">
-          <li th:data-id="${iterStat.index + 1}" class="grid grid-cols-5 gap-4 mb-4" th:each="field, iterStat : *{schemaFields}">
-            <div class="flex items-center">
-              <i class="handle fas fa-grip-lines mr-2 cursor-move"></i>
-              <label>
-                <input type="text" th:field="*{schemaFields[__${iterStat.index}__].fieldName}" class="field-name-id field-name-name mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="필드명" required>
-              </label>
+          <div id="schema-field-list" class="mb-6">
+            <ul id="field-list" class="list space-y-4">
+              <li th:data-id="${iterStat.index + 1}" class="field-card bg-white rounded-lg p-4" th:each="field, iterStat : *{schemaFields}">
+                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                  <!-- 드래그 핸들 & 필드명 -->
+                  <div class="flex-grow md:w-1/4">
+                    <div class="flex items-center">
+                      <i class="handle fas fa-grip-vertical text-gray-400 mr-2 cursor-move"></i>
+                      <input type="text" th:field="*{schemaFields[__${iterStat.index}__].fieldName}" class="field-name-id field-name-name mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500" placeholder="필드명" required>
+                    </div>
+                  </div>
+
+                  <!-- 타입 선택 -->
+                  <div class="md:w-1/4">
+                    <select th:field="*{schemaFields[__${iterStat.index}__].mockDataType}" class="data-type-id data-type-name mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500" required>
+                      <optgroup th:each="group : ${groupedMockDataTypes}" th:label="${group.key}">
+                        <option th:each="type : ${group.value}" th:value="${type.name}" th:text="${type.description} + ' (' + ${type.name} + ')'">Type</option>
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <!-- Null 비율 -->
+                  <div class="md:w-1/6">
+                    <div class="flex items-center">
+                      <label class="text-sm text-gray-500 mr-2">Null</label>
+                      <input type="number" min="0" max="100" th:field="*{schemaFields[__${iterStat.index}__].blankPercent}" class="blank-percent-id blank-percent-name block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500" required>
+                      <span class="text-sm text-gray-500 ml-1">%</span>
+                    </div>
+                  </div>
+
+                  <!-- 옵션 -->
+                  <div class="md:w-1/4">
+                    <div class="relative">
+                      <input type="text" th:field="*{schemaFields[__${iterStat.index}__].typeOptionJson}" class="type-option-id type-option-name mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500" placeholder="{}">
+                      <i class="option-help fas fa-cog text-gray-500 hover:text-primary-600 cursor-pointer absolute right-3 top-1/2 transform -translate-y-1/2"></i>
+                    </div>
+                  </div>
+
+                  <!-- 삭제 버튼 -->
+                  <div>
+                    <button type="button" class="delete-row p-2 text-red-500 hover:text-red-700 focus:outline-none">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 필드 미리보기 -->
+                <div class="preview-section mt-3 text-sm text-gray-600 border-t pt-2 hidden">
+                  <div class="flex">
+                    <span class="font-medium mr-2">미리보기:</span>
+                    <span class="field-preview">로딩 중...</span>
+                  </div>
+                </div>
+
+                <input type="hidden" th:field="*{schemaFields[__${iterStat.index}__].fieldOrder}" class="field-order-id field-order-name field-order-value">
+              </li>
+            </ul>
+          </div>
+
+          <div class="flex justify-between">
+            <button type="submit" class="bg-primary-600 text-white py-2 px-6 rounded-md hover:bg-primary-700">저장</button>
+            <button type="button" id="preview-data" class="bg-secondary-600 text-white py-2 px-6 rounded-md hover:bg-secondary-700">데이터 미리보기</button>
+          </div>
+        </section>
+
+        <!-- 내보내기 설정 패널 -->
+        <section class="bg-white shadow-sm rounded-lg p-6" th:object="${tableSchema}">
+          <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-file-export text-primary-500 mr-2"></i>
+            내보내기 설정
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="flex flex-col space-y-2">
+              <label for="rowCount" class="block text-sm font-medium text-gray-700">행 수</label>
+              <input type="number" min="1" max="10000" id="rowCount" name="rowCount" value="100" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <div>
-              <label>
-                <select th:field="*{schemaFields[__${iterStat.index}__].mockDataType}" class="data-type-id data-type-name mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
-                  <option th:each="type : ${mockDataTypes}" th:value="${type.name}" th:text="${type.name}">Type</option>
-                </select>
-              </label>
+            <div class="flex flex-col space-y-2">
+              <label for="fileType" class="block text-sm font-medium text-gray-700">파일 형식</label>
+              <select id="fileType" name="fileType" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                <option th:each="fileType : ${fileTypes}" th:value="${fileType}" th:text="${fileType}">Format</option>
+              </select>
             </div>
-            <div class="flex items-center">
-              <label>
-                <input type="number" min="0" max="100" th:field="*{schemaFields[__${iterStat.index}__].blankPercent}" class="blank-percent-id blank-percent-name mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
-              </label>
+          </div>
+
+          <div class="text-center">
+            <button type="button" id="export" class="bg-green-600 text-white py-2 px-8 rounded-md hover:bg-green-700 flex items-center mx-auto">
+              <i class="fas fa-download mr-2"></i>
+              생성 및 다운로드
+            </button>
+          </div>
+        </section>
+
+        <!-- 로딩 오버레이 -->
+        <section id="loading-overlay" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+          <div class="bg-white shadow-lg rounded-lg p-6">
+            <div class="text-center">
+              <i class="fas fa-spinner fa-spin text-primary-600 text-3xl"></i>
+              <p class="text-gray-600 mt-4">파일을 생성 중입니다. 잠시만 기다려주세요...</p>
             </div>
-            <div class="flex items-center">
-              <label>
-                <input type="text" th:field="*{schemaFields[__${iterStat.index}__].typeOptionJson}" class="type-option-id type-option-name mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-              </label>
-            </div>
-            <div class="flex items-center">
-              <label class="w-full">
-                <input type="text" th:field="*{schemaFields[__${iterStat.index}__].forceValue}" class="force-value-id force-value-name mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-              </label>
-              <i class="delete-row fas fa-trash ml-2 cursor-pointer"></i>
+          </div>
+        </section>
+
+        <!-- 옵션 입력용 모달 다이얼로그 -->
+        <section id="options-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+          <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold text-gray-800" id="modal-title">데이터 타입 옵션 설정</h3>
+              <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
 
-            <input type="hidden" th:field="*{schemaFields[__${iterStat.index}__].fieldOrder}" class="field-order-id field-order-name field-order-value">
-          </li>
-        </ul>
-      </div>
+            <div id="modal-content">
+              <!-- 타입 별 옵션 폼이 여기에 동적으로 표시됨 -->
 
-      <button type="button" id="add-row" class="mt-4 bg-sky-600 text-white py-2 px-4 rounded hover:bg-sky-700">열 추가</button>
-      <button type="submit" class="mt-4 bg-sky-600 text-white py-2 px-4 rounded hover:bg-sky-700">저장</button>
-    </section>
+              <!-- STRING 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="STRING">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">최소 길이</label>
+                  <input type="number" id="string-min-length" min="1" value="5" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">최대 길이</label>
+                  <input type="number" id="string-max-length" min="1" value="10" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+              </div>
 
-    <section th:object="${tableSchema}">
-      <div class="grid grid-cols-3 gap-4 mb-4">
-        <div class="flex items-center space-x-4">
-          <label for="rowCount" class="block text-sm font-medium text-gray-500 w-1/6">열 개수</label>
-          <input type="number" min="1" max="1000" id="rowCount" name="rowCount" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+              <!-- NUMBER 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="NUMBER">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">최소값</label>
+                  <input type="number" id="number-min" value="0" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">최대값</label>
+                  <input type="number" id="number-max" value="100" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">소수점 자릿수</label>
+                  <input type="number" id="number-decimals" min="0" value="0" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+              </div>
+
+              <!-- KOREAN_NAME 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="KOREAN_NAME">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">성별</label>
+                  <select id="korean-name-gender" class="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="">무작위</option>
+                    <option value="male">남성</option>
+                    <option value="female">여성</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- KOREAN_ADDRESS 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="KOREAN_ADDRESS">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">주소 형식</label>
+                  <select id="korean-address-type" class="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="roadAddress">도로명 주소</option>
+                    <option value="jibunAddress">지번 주소</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- KOREAN_PHONE 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="KOREAN_PHONE">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">전화번호 유형</label>
+                  <select id="korean-phone-type" class="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="mobile">휴대폰 번호</option>
+                    <option value="home">집 전화번호</option>
+                    <option value="office">회사/기업 전화번호</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- ROW_NUMBER 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="ROW_NUMBER">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">시작 번호</label>
+                  <input type="number" id="row-number-start" min="0" value="1" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">증가치</label>
+                  <input type="number" id="row-number-step" min="1" value="1" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">스키마 이름 (옵션)</label>
+                  <input type="text" id="row-number-schema" placeholder="예: mySchema" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+              </div>
+
+              <!-- CAR 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="CAR">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">출력 형식</label>
+                  <select id="car-format" class="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="full">모든 정보 (제조사, 모델, 연식, 차체, 연료, 색상)</option>
+                    <option value="manufacturermodel">제조사 + 모델명</option>
+                    <option value="yearmodel">연식 + 모델명</option>
+                    <option value="manufacturer">제조사만</option>
+                    <option value="model">모델명만</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- DATETIME 타입 옵션 폼 -->
+              <div class="type-option-form hidden" data-type="DATETIME">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">시작 날짜</label>
+                  <input type="datetime-local" id="datetime-from" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">종료 날짜</label>
+                  <input type="datetime-local" id="datetime-to" class="block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">출력 형식</label>
+                  <select id="datetime-format" class="block w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="yyyy-MM-dd">YYYY-MM-DD (2023-01-31)</option>
+                    <option value="yyyy/MM/dd">YYYY/MM/DD (2023/01/31)</option>
+                    <option value="yyyy-MM-dd HH:mm:ss">YYYY-MM-DD HH:MM:SS (2023-01-31 14:30:00)</option>
+                    <option value="MM/dd/yyyy">MM/DD/YYYY (01/31/2023)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+              <button id="apply-options" class="bg-primary-600 text-white py-2 px-4 rounded hover:bg-primary-700">
+                적용하기
+              </button>
+            </div>
+          </div>
+        </section>
+      </form>
+    </div>
+
+    <!-- 오른쪽 패널: 실시간 데이터 미리보기 -->
+    <div class="w-full lg:w-1/3">
+      <div class="bg-white shadow-sm rounded-lg p-6 sticky top-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fas fa-eye text-primary-500 mr-2"></i>
+          데이터 미리보기
+        </h3>
+
+        <div id="preview-container" class="overflow-auto max-h-96">
+          <div id="preview-placeholder" class="text-center py-8 text-gray-500">
+            <i class="fas fa-table text-3xl mb-2"></i>
+            <p>데이터 미리보기를 보려면<br>'데이터 미리보기' 버튼을 클릭하세요.</p>
+          </div>
+
+          <div id="preview-content" class="hidden">
+            <div id="preview-tab-buttons" class="flex border-b">
+              <button class="preview-tab-btn py-2 px-4 active" data-tab="table">테이블</button>
+              <button class="preview-tab-btn py-2 px-4" data-tab="json">JSON</button>
+              <button class="preview-tab-btn py-2 px-4" data-tab="sql">SQL</button>
+            </div>
+
+            <div id="preview-tab-content">
+              <!-- 테이블 미리보기 -->
+              <div id="table-preview" class="preview-tab-content">
+                <table class="min-w-full divide-y divide-gray-200 mt-4" id="preview-table">
+                  <thead class="bg-gray-50">
+                    <tr id="preview-table-header"></tr>
+                  </thead>
+                  <tbody id="preview-table-body" class="divide-y divide-gray-200"></tbody>
+                </table>
+              </div>
+
+              <!-- JSON 미리보기 -->
+              <div id="json-preview" class="preview-tab-content hidden">
+                <pre id="preview-json" class="bg-gray-50 p-4 overflow-auto text-xs mt-4"></pre>
+              </div>
+
+              <!-- SQL 미리보기 -->
+              <div id="sql-preview" class="preview-tab-content hidden">
+                <pre id="preview-sql" class="bg-gray-50 p-4 overflow-auto text-xs mt-4"></pre>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center space-x-4">
-          <label for="fileType" class="block text-sm font-medium text-gray-500 w-1/6">Format</label>
-          <select id="fileType" name="fileType" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-            <option th:each="fileType : ${fileTypes}" th:value="${fileType}" th:text="${fileType}">Format</option>
-          </select>
-        </div>
       </div>
-
-      <div class="text-center">
-        <button type="button" id="export" class="mt-4 bg-sky-600 text-white py-2 px-4 rounded hover:bg-sky-700">Generate</button>
-      </div>
-    </section>
-    <section id="loading-overlay" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-      <div class="bg-white shadow-lg rounded-lg p-6">
-        <div class="text-center">
-          <i class="fas fa-spinner fa-spin text-sky-600 text-3xl"></i>
-          <p class="text-gray-600 mt-4">파일을 다운로드 중입니다. 잠시만 기다려주세요...</p>
-        </div>
-      </div>
-    </section>
-  </form>
+    </div>
+  </div>
 </main>
 
 <footer class="bg-white shadow w-full mt-auto">
-  <div class="container mx-auto px-4 py-6 text-center text-gray-600">
+  <div class="container mx-auto px-4 py-4 text-center text-gray-600">
     © 2024 GenieLee, Inc
   </div>
 </footer>
@@ -235,6 +510,558 @@
             });
         }
     }
+
+    // 타입별 옵션 가이드 설정
+    const typeOptionsGuide = {
+        'STRING': '{"minLength": 5, "maxLength": 10}',
+        'NUMBER': '{"min": 0, "max": 100, "decimals": 2}',
+        'BOOLEAN': '{}',
+        'DATETIME': '{"from": "2023-01-01T00:00:00", "to": "2023-12-31T23:59:59", "format": "yyyy-MM-dd HH:mm:ss"}',
+        'ENUM': '{"values": ["값1", "값2", "값3"]}',
+        'SENTENCE': '{"minSentences": 1, "maxSentences": 3}',
+        'PARAGRAPH': '{"minParagraphs": 1, "maxParagraphs": 2}',
+        'UUID': '{}',
+        'EMAIL': '{"username": null, "domain": null, "minLength": 5, "maxLength": 10}',
+        'CAR': '{"format": "full"}',
+        'ROW_NUMBER': '{"start": 1, "step": 1, "schemaName": "mySchema"}',
+        'NAME': '{"format": "full", "includeMiddleName": false}',
+        'KOREAN_NAME': '{"gender": "male"}',
+        'KOREAN_ADDRESS': '{"addressType": "roadAddress"}',
+        'KOREAN_PHONE': '{"phoneType": "mobile"}'
+    };
+
+    // 옵션 도움말 툴팁 초기화
+    function initOptionHelpTooltips() {
+        document.querySelectorAll('.option-help').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                const row = e.target.closest('li');
+                const selectElement = row.querySelector('select[class*="data-type-name"]');
+                const inputElement = row.querySelector('input[class*="type-option-name"]');
+
+                const selectedType = selectElement.value;
+                const optionExample = typeOptionsGuide[selectedType] || '{}';
+
+                // 옵션 예시를 입력 필드에 표시
+                inputElement.placeholder = optionExample;
+
+                // 선택적으로: 사용자가 클릭하면 예시를 입력 필드에 삽입할 수 있음
+                if (window.confirm('이 타입에 대한 옵션 예시를 입력 필드에 적용하시겠습니까?')) {
+                    inputElement.value = optionExample;
+                }
+            });
+        });
+
+        // 타입 변경 시 플레이스홀더 업데이트
+        document.querySelectorAll('select[class*="data-type-name"]').forEach(select => {
+            select.addEventListener('change', function(e) {
+                const row = e.target.closest('li');
+                const inputElement = row.querySelector('input[class*="type-option-name"]');
+                const selectedType = e.target.value;
+                const optionExample = typeOptionsGuide[selectedType] || '{}';
+
+                inputElement.placeholder = optionExample;
+            });
+        });
+    }
+
+    // 새 행 추가 후에도 도움말 툴팁이 작동하도록 설정
+    const originalAddRow = document.getElementById('add-row').onclick;
+    document.getElementById('add-row').onclick = function() {
+        if (originalAddRow) originalAddRow();
+        schemaFieldList.add({});
+        const lastRow = schemaFieldList.items.at(-1).elm;
+        enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
+        initOptionHelpTooltips();
+    };
+
+    // 초기 도움말 툴팁 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        initOptionHelpTooltips();
+    });
+
+    // 옵션 모달 다이얼로그 기능
+    const optionsModal = document.getElementById('options-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const applyOptionsBtn = document.getElementById('apply-options');
+
+    // 모달 열기 함수 - 이벤트 핸들러와 분리하여 예외 처리를 강화
+    function openOptionsModal(clickedElement) {
+        try {
+            const row = clickedElement.closest('li');
+            if (!row) {
+                console.error('행(row) 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            const selectElement = row.querySelector('select[class*="data-type-name"]');
+            if (!selectElement) {
+                console.error('데이터 타입 선택 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            const selectedType = selectElement.value;
+
+            // 모달 제목 설정
+            document.getElementById('modal-title').innerText = `${selectedType} 타입 옵션 설정`;
+
+            // 현재 클릭된 요소를 모달에 저장 (나중에 값을 적용할 때 사용)
+            optionsModal.setAttribute('data-target-row', row.getAttribute('data-id'));
+
+            // 기존 옵션 폼 숨기기
+            document.querySelectorAll('.type-option-form').forEach(form => {
+                form.classList.add('hidden');
+            });
+
+            // 선택한 타입에 맞는 옵션 폼만 표시
+            const activeForm = document.querySelector(`.type-option-form[data-type="${selectedType}"]`);
+            if (activeForm) {
+                activeForm.classList.remove('hidden');
+
+                // 현재 옵션 값이 있으면 폼에 미리 채워두기
+                const inputElement = row.querySelector('input[class*="type-option-name"]');
+                if (inputElement && inputElement.value) {
+                    try {
+                        const currentOptions = JSON.parse(inputElement.value);
+                        populateFormWithOptions(selectedType, currentOptions);
+                    } catch (e) {
+                        console.warn('현재 옵션 값을 파싱할 수 없습니다:', e);
+                    }
+                }
+            }
+
+            // 모달 열기
+            optionsModal.classList.remove('hidden');
+        } catch (error) {
+            console.error('모달 창을 여는 중 오류가 발생했습니다:', error);
+            alert('옵션 설정 창을 열 수 없습니다. 페이지를 새로고침한 후 다시 시도해주세요.');
+        }
+    }
+
+    // 폼에 현재 옵션 값 채우기
+    function populateFormWithOptions(type, options) {
+        switch (type) {
+            case 'STRING':
+                if (options.minLength) document.getElementById('string-min-length').value = options.minLength;
+                if (options.maxLength) document.getElementById('string-max-length').value = options.maxLength;
+                break;
+            case 'NUMBER':
+                if (options.min) document.getElementById('number-min').value = options.min;
+                if (options.max) document.getElementById('number-max').value = options.max;
+                if (options.decimals !== undefined) document.getElementById('number-decimals').value = options.decimals;
+                break;
+            case 'KOREAN_NAME':
+                if (options.gender) document.getElementById('korean-name-gender').value = options.gender;
+                break;
+            case 'KOREAN_ADDRESS':
+                if (options.addressType) document.getElementById('korean-address-type').value = options.addressType;
+                break;
+            case 'KOREAN_PHONE':
+                if (options.phoneType) document.getElementById('korean-phone-type').value = options.phoneType;
+                break;
+            case 'ROW_NUMBER':
+                if (options.start !== undefined) document.getElementById('row-number-start').value = options.start;
+                if (options.step !== undefined) document.getElementById('row-number-step').value = options.step;
+                if (options.schemaName) document.getElementById('row-number-schema').value = options.schemaName;
+                break;
+            case 'CAR':
+                if (options.format) document.getElementById('car-format').value = options.format;
+                break;
+            // 다른 타입도 필요에 따라 추가
+        }
+    }
+
+    // 이벤트 핸들러 등록 함수 - 기존 함수를 대체
+    function initOptionsModalHandlers() {
+        // 기존 이벤트 리스너 제거 (중복 방지)
+        document.querySelectorAll('.option-help').forEach(icon => {
+            const newIcon = icon.cloneNode(true);
+            icon.parentNode.replaceChild(newIcon, icon);
+        });
+
+        // 새 이벤트 리스너 추가
+        document.querySelectorAll('.option-help').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                e.preventDefault();
+                openOptionsModal(this);
+            });
+        });
+
+        // 모달 닫기 버튼
+        closeModalBtn.addEventListener('click', () => {
+            optionsModal.classList.add('hidden');
+        });
+
+        // 모달 외부 클릭 시 닫기
+        optionsModal.addEventListener('click', (e) => {
+            if (e.target === optionsModal) {
+                optionsModal.classList.add('hidden');
+            }
+        });
+    }
+
+    // 옵션 적용 함수
+    applyOptionsBtn.addEventListener('click', () => {
+        try {
+            const rowId = optionsModal.getAttribute('data-target-row');
+            if (!rowId) {
+                console.error('타겟 행 ID를 찾을 수 없습니다.');
+                return;
+            }
+
+            const row = document.querySelector(`li[data-id="${rowId}"]`);
+            if (!row) {
+                console.error('해당 ID를 가진 행을 찾을 수 없습니다.');
+                return;
+            }
+
+            const selectElement = row.querySelector('select[class*="data-type-name"]');
+            const inputElement = row.querySelector('input[class*="type-option-name"]');
+
+            if (!selectElement || !inputElement) {
+                console.error('필요한 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            const selectedType = selectElement.value;
+            let optionValue = '';
+
+            // 선택한 타입에 맞는 옵션 값 가져오기
+            switch (selectedType) {
+                case 'STRING':
+                    const stringMinLength = document.getElementById('string-min-length').value;
+                    const stringMaxLength = document.getElementById('string-max-length').value;
+                    optionValue = JSON.stringify({ minLength: stringMinLength, maxLength: stringMaxLength });
+                    break;
+                case 'NUMBER':
+                    const numberMin = document.getElementById('number-min').value;
+                    const numberMax = document.getElementById('number-max').value;
+                    const numberDecimals = document.getElementById('number-decimals').value;
+                    optionValue = JSON.stringify({ min: numberMin, max: numberMax, decimals: numberDecimals });
+                    break;
+                case 'BOOLEAN':
+                    optionValue = '{}';
+                    break;
+                case 'DATETIME':
+                    const datetimeFrom = document.getElementById('datetime-from').value;
+                    const datetimeTo = document.getElementById('datetime-to').value;
+                    const datetimeFormat = document.getElementById('datetime-format').value;
+                    optionValue = JSON.stringify({ from: datetimeFrom, to: datetimeTo, format: datetimeFormat });
+                    break;
+                case 'ENUM':
+                    // ENUM의 경우, 추가 입력 없이 기본값 사용
+                    optionValue = '{"values": ["값1", "값2", "값3"]}';
+                    break;
+                case 'SENTENCE':
+                    optionValue = '{"minSentences": 1, "maxSentences": 3}';
+                    break;
+                case 'PARAGRAPH':
+                    optionValue = '{"minParagraphs": 1, "maxParagraphs": 2}';
+                    break;
+                case 'UUID':
+                    optionValue = '{}';
+                    break;
+                case 'EMAIL':
+                    optionValue = '{"username": null, "domain": null, "minLength": 5, "maxLength": 10}';
+                    break;
+                case 'CAR':
+                    const carFormat = document.getElementById('car-format').value;
+                    optionValue = JSON.stringify({ format: carFormat });
+                    break;
+                case 'ROW_NUMBER':
+                    const rowNumberStart = document.getElementById('row-number-start').value;
+                    const rowNumberStep = document.getElementById('row-number-step').value;
+                    const rowNumberSchema = document.getElementById('row-number-schema').value;
+                    optionValue = JSON.stringify({ start: rowNumberStart, step: rowNumberStep, schemaName: rowNumberSchema });
+                    break;
+                case 'NAME':
+                    optionValue = '{"format": "full", "includeMiddleName": false}';
+                    break;
+                case 'KOREAN_NAME':
+                    const koreanNameGender = document.getElementById('korean-name-gender').value;
+                    optionValue = JSON.stringify({ gender: koreanNameGender });
+                    break;
+                case 'KOREAN_ADDRESS':
+                    const koreanAddressType = document.getElementById('korean-address-type').value;
+                    optionValue = JSON.stringify({ addressType: koreanAddressType });
+                    break;
+                case 'KOREAN_PHONE':
+                    const koreanPhoneType = document.getElementById('korean-phone-type').value;
+                    optionValue = JSON.stringify({ phoneType: koreanPhoneType });
+                    break;
+                default:
+                    optionValue = '';
+            }
+
+            // 옵션 값 적용
+            inputElement.value = optionValue;
+
+            // 모달 닫기
+            optionsModal.classList.add('hidden');
+        } catch (error) {
+            console.error('옵션 적용 중 오류가 발생했습니다:', error);
+            alert('옵션을 적용할 수 없습니다. 페이지를 새로고침한 후 다시 시도해주세요.');
+        }
+    });
+
+    // 페이지 로드 및 DOM 변경 시 이벤트 핸들러 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        initOptionHelpTooltips();
+        initOptionsModalHandlers();
+    });
+
+    // 행 추가 시 이벤트 핸들러 재등록
+    const originalAddRowHandler = document.getElementById('add-row').onclick;
+    document.getElementById('add-row').onclick = function() {
+        if (typeof originalAddRowHandler === 'function') originalAddRowHandler();
+        schemaFieldList.add({});
+        const lastRow = schemaFieldList.items.at(-1).elm;
+        enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
+        initOptionHelpTooltips();
+        initOptionsModalHandlers();
+    };
+
+    // 데이터 미리보기 탭 전환 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        const previewTabButtons = document.querySelectorAll('.preview-tab-btn');
+        previewTabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // 모든 버튼의 active 클래스 제거
+                previewTabButtons.forEach(btn => btn.classList.remove('active', 'border-b-2', 'border-primary-500', 'text-primary-600'));
+
+                // 모든 컨텐츠 영역 숨기기
+                document.querySelectorAll('.preview-tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // 클릭된 버튼 활성화
+                this.classList.add('active', 'border-b-2', 'border-primary-500', 'text-primary-600');
+
+                // 해당 컨텐츠 표시
+                const tabName = this.getAttribute('data-tab');
+                document.getElementById(tabName + '-preview').classList.remove('hidden');
+            });
+        });
+    });
+
+    // 데이터 미리보기 버튼 기능
+    document.getElementById('preview-data').addEventListener('click', async function() {
+        // 미리보기 데이터 생성 및 표시 로직
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        const previewContent = document.getElementById('preview-content');
+
+        // 로딩 상태 표시
+        previewPlaceholder.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin text-2xl"></i><p class="mt-2">데이터를 생성하는 중...</p></div>';
+        previewPlaceholder.classList.remove('hidden');
+        previewContent.classList.add('hidden');
+
+        try {
+            // 테이블 폼 데이터 가져오기
+            const formData = new FormData(document.forms['table-schema-form']);
+
+            // 테이블 미리보기 데이터를 위한 객체 생성
+            const previewRequestData = {
+                schemaName: formData.get('schemaName'),
+                schemaFields: [],
+                previewRowCount: 5  // 미리보기는 5개 행으로 고정
+            };
+
+            // 필드 정보 수집
+            const fieldNames = document.querySelectorAll('input[class*="field-name-name"]');
+            const dataTypes = document.querySelectorAll('select[class*="data-type-name"]');
+            const blankPercents = document.querySelectorAll('input[class*="blank-percent-name"]');
+            const typeOptions = document.querySelectorAll('input[class*="type-option-name"]');
+
+            for (let i = 0; i < fieldNames.length; i++) {
+                if (fieldNames[i].value) {
+                    // 각 필드 정보 추출
+                    const fieldName = fieldNames[i].value;
+                    const mockDataType = dataTypes[i].value;
+                    const blankPercent = blankPercents[i].value || 0;
+
+                    let typeOptionJson = '{}';
+                    try {
+                        // 옵션 값이 있으면 사용, 없으면 기본 빈 객체
+                        typeOptionJson = typeOptions[i].value || '{}';
+                        // 유효한 JSON인지 테스트
+                        JSON.parse(typeOptionJson);
+                    } catch (e) {
+                        console.warn('Invalid JSON option for field ' + fieldName, e);
+                        typeOptionJson = '{}';
+                    }
+
+                    previewRequestData.schemaFields.push({
+                        fieldName: fieldName,
+                        mockDataType: mockDataType,
+                        blankPercent: blankPercent,
+                        typeOptionJson: typeOptionJson,
+                        fieldOrder: i + 1
+                    });
+                }
+            }
+
+            // API 호출하여 미리보기 데이터 가져오기
+            const response = await fetch('/api/preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(previewRequestData)
+            });
+
+            if (!response.ok) {
+                throw new Error('API 요청 실패: ' + response.status);
+            }
+
+            const previewData = await response.json();
+
+            if (previewData.success === false) {
+                throw new Error(previewData.message || '미리보기 데이터 생성 실패');
+            }
+
+            // 테이블 헤더 생성
+            const headerRow = document.getElementById('preview-table-header');
+            headerRow.innerHTML = '';
+            previewData.headers.forEach(field => {
+                headerRow.innerHTML += `<th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${field}</th>`;
+            });
+
+            // 테이블 바디 생성
+            const tableBody = document.getElementById('preview-table-body');
+            tableBody.innerHTML = '';
+
+            previewData.rows.forEach(row => {
+                let rowElement = document.createElement('tr');
+                previewData.headers.forEach(header => {
+                    let cell = document.createElement('td');
+                    cell.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-500';
+                    cell.textContent = row[header] || '';
+                    rowElement.appendChild(cell);
+                });
+                tableBody.appendChild(rowElement);
+            });
+
+            // JSON 미리보기
+            const jsonPreview = document.getElementById('preview-json');
+            jsonPreview.textContent = JSON.stringify(previewData.rows, null, 2);
+
+            // SQL 미리보기
+            const sqlPreview = document.getElementById('preview-sql');
+            let sqlContent = `-- INSERT 예시\n`;
+
+            const tableName = previewData.schemaName || 'sample_table';
+
+            previewData.rows.forEach(row => {
+                const fields = Object.keys(row);
+                const values = fields.map(field => {
+                    const value = row[field];
+                    return isNaN(value) || value === '' ? `'${value}'` : value;
+                });
+
+                sqlContent += `INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${values.join(', ')});\n`;
+            });
+
+            sqlPreview.textContent = sqlContent;
+
+            // 미리보기 표시
+            previewPlaceholder.classList.add('hidden');
+            previewContent.classList.remove('hidden');
+        } catch (error) {
+            console.error('데이터 미리보기 생성 오류:', error);
+            previewPlaceholder.innerHTML = `<div class="text-center text-red-500">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+                <p class="mt-2">데이터 미리보기 생성 중 오류가 발생했습니다.</p>
+                <p class="text-sm">${error.message}</p>
+            </div>`;
+        }
+    });
+
+    // 각 필드에 대한 미리보기 토글 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        // 새 필드 추가 이벤트 등에서 이 함수를 호출해야 함
+        function initFieldPreviewButtons() {
+            document.querySelectorAll('.field-card').forEach(card => {
+                const typeSelect = card.querySelector('select[class*="data-type-name"]');
+                const previewSection = card.querySelector('.preview-section');
+
+                if (typeSelect && previewSection) {
+                    typeSelect.addEventListener('change', function() {
+                        updateFieldPreview(card);
+                    });
+
+                    // 초기 미리보기 표시
+                    updateFieldPreview(card);
+                }
+            });
+        }
+
+        function updateFieldPreview(card) {
+            const typeSelect = card.querySelector('select[class*="data-type-name"]');
+            const previewSection = card.querySelector('.preview-section');
+            const previewElement = card.querySelector('.field-preview');
+
+            if (!typeSelect || !previewSection || !previewElement) return;
+
+            const selectedType = typeSelect.value;
+
+            // 미리보기 섹션 표시
+            previewSection.classList.remove('hidden');
+
+            // 타입에 따른 샘플 데이터 표시
+            let sampleData = "예시 데이터 없음";
+
+            switch (selectedType) {
+                case 'STRING':
+                    sampleData = '랜덤 문자열';
+                    break;
+                case 'NUMBER':
+                    sampleData = Math.floor(Math.random() * 100);
+                    break;
+                case 'BOOLEAN':
+                    sampleData = Math.random() > 0.5 ? 'true' : 'false';
+                    break;
+                case 'DATETIME':
+                    sampleData = new Date().toISOString().split('T')[0];
+                    break;
+                case 'KOREAN_NAME':
+                    sampleData = ['김철수', '이영희', '박지민', '최유진'][Math.floor(Math.random() * 4)];
+                    break;
+                case 'KOREAN_ADDRESS':
+                    sampleData = '서울시 강남구 테헤란로 123길 45';
+                    break;
+                case 'KOREAN_PHONE':
+                    sampleData = '010-1234-5678';
+                    break;
+                case 'EMAIL':
+                    sampleData = 'example@example.com';
+                    break;
+                case 'CAR':
+                    sampleData = '2023년형 현대 쏘나타';
+                    break;
+                case 'ROW_NUMBER':
+                    sampleData = '1, 2, 3...';
+                    break;
+                default:
+                    sampleData = '예시 데이터';
+            }
+
+            previewElement.textContent = sampleData;
+        }
+
+        // 초기화
+        initFieldPreviewButtons();
+
+        // 새 행 추가 시 처리
+        const originalAddRowHandler = document.getElementById('add-row').onclick;
+        document.getElementById('add-row').onclick = function() {
+            if (typeof originalAddRowHandler === 'function') originalAddRowHandler();
+
+            setTimeout(() => {
+                initFieldPreviewButtons();
+            }, 100);
+        };
+    });
 </script>
 </body>
 </html>
+
+
