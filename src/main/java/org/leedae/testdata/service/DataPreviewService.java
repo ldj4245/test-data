@@ -27,7 +27,12 @@ public class DataPreviewService {
      */
     public DataPreviewResponse generatePreview(TableSchemaDto schemaDto, int rowCount) {
         try {
-            List<String> headers = schemaDto.schemaFields().stream()
+            // fieldOrder에 따라 필드를 정렬
+            List<SchemaFieldDto> sortedFields = schemaDto.schemaFields().stream()
+                    .sorted((a, b) -> Integer.compare(a.fieldOrder(), b.fieldOrder()))
+                    .collect(Collectors.toList());
+
+            List<String> headers = sortedFields.stream()
                     .map(SchemaFieldDto::fieldName)
                     .collect(Collectors.toList());
 
@@ -36,7 +41,7 @@ public class DataPreviewService {
             for (int i = 0; i < rowCount; i++) {
                 Map<String, String> row = new LinkedHashMap<>();
 
-                for (SchemaFieldDto field : schemaDto.schemaFields()) {
+                for (SchemaFieldDto field : sortedFields) {
                     MockDataType dataType = field.mockDataType();
                     String fieldName = field.fieldName();
 
