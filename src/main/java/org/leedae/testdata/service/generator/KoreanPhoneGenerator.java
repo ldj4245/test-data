@@ -149,14 +149,12 @@ public class KoreanPhoneGenerator implements MockDataGenerator {
             return String.format("%s-%s", prefix, last);
         } else {
             // 지역번호로 시작하는 일반 번호
-            return generateHomePhone();
+            return generateHomePhone(); // 일반 집 전화번호와 동일한 형식 사용
         }
     }
 
     /**
-     * 옵션 클래스 - 전화번호 타입 지정 가능
+     * 전화번호 타입별 옵션을 정의하는 내부 클래스
      */
-    public record Option(String phoneType) {
-        // phoneType: "mobile", "home", "office"
-    }
+    public record Option(String phoneType) {}
 }
