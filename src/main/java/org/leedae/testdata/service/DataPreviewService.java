@@ -84,14 +84,61 @@ public class DataPreviewService {
      */
     public String generateSingleFieldValue(MockDataType dataType, Integer blankPercent, String typeOptionJson) {
         try {
-            return mockDataGeneratorContext.generate(
+            String result = mockDataGeneratorContext.generate(
                     dataType,
                     blankPercent,
                     typeOptionJson,
                     null // forceValue는 미리보기에서는 사용하지 않음
             );
+
+            // null이나 빈 문자열이 반환되면 기본값으로 대체
+            if (result == null || result.trim().isEmpty() || "null".equals(result)) {
+                return generateDefaultValue(dataType);
+            }
+
+            return result;
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return "생성 오류: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 데이터 타입별 기본값을 생성합니다.
+     */
+    private String generateDefaultValue(MockDataType dataType) {
+        switch (dataType) {
+            case STRING:
+                return "샘플 문자열";
+            case NUMBER:
+                return "42";
+            case BOOLEAN:
+                return "true";
+            case DATETIME:
+                return "2024-01-01";
+            case KOREAN_NAME:
+                return "김철수";
+            case KOREAN_ADDRESS:
+                return "서울시 강남구";
+            case KOREAN_PHONE:
+                return "010-1234-5678";
+            case EMAIL:
+                return "example@example.com";
+            case CAR:
+                return "현대 쏘나타";
+            case ROW_NUMBER:
+                return "1";
+            case UUID:
+                return "550e8400-e29b-41d4-a716-446655440000";
+            case NAME:
+                return "John Doe";
+            case SENTENCE:
+                return "이것은 샘플 문장입니다.";
+            case PARAGRAPH:
+                return "이것은 샘플 단락입니다. 여러 문장으로 구성됩니다.";
+            case ENUM:
+                return "샘플값";
+            default:
+                return "샘플 데이터";
         }
     }
 }
