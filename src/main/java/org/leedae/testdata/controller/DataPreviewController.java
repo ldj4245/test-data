@@ -54,7 +54,25 @@ public class DataPreviewController {
         try {
             String fieldName = (String) fieldRequest.get("fieldName");
             String mockDataType = (String) fieldRequest.get("mockDataType");
-            Integer blankPercent = (Integer) fieldRequest.getOrDefault("blankPercent", 0);
+
+            // blankPercent 값을 안전하게 처리
+            Object blankPercentObj = fieldRequest.get("blankPercent");
+            Integer blankPercent = 0;
+            if (blankPercentObj != null) {
+                if (blankPercentObj instanceof Integer) {
+                    blankPercent = (Integer) blankPercentObj;
+                } else if (blankPercentObj instanceof String) {
+                    try {
+                        blankPercent = Integer.parseInt((String) blankPercentObj);
+                    } catch (NumberFormatException e) {
+                        blankPercent = 0;
+                    }
+                }
+            }
+
+            // 미리보기에서는 null 값을 최소화하기 위해 blankPercent를 0으로 고정
+            blankPercent = 0;
+
             String typeOptionJson = (String) fieldRequest.getOrDefault("typeOptionJson", "{}");
 
             // 5개의 샘플 데이터 생성
@@ -65,6 +83,12 @@ public class DataPreviewController {
                         blankPercent,
                         typeOptionJson
                 );
+
+                // null 값이 반환되면 "샘플 데이터"로 대체
+                if (sampleValue == null || "null".equals(sampleValue)) {
+                    sampleValue = "샘플 데이터 " + (i + 1);
+                }
+
                 samples.add(sampleValue);
             }
 
