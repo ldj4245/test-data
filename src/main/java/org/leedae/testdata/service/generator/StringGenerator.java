@@ -44,8 +44,12 @@ public class StringGenerator implements MockDataGenerator {
         Option option = new Option(1,10); //기본 옵션
         try{
             if(typeOptionJson != null && !typeOptionJson.isBlank()){
-                option = mapper.readValue(typeOptionJson, Option.class);
-
+                Option parsedOption = mapper.readValue(typeOptionJson, Option.class);
+                // null 체크를 통해 기본값 유지
+                option = new Option(
+                        parsedOption.minLength() != null ? parsedOption.minLength() : 1,
+                        parsedOption.maxLength() != null ? parsedOption.maxLength() : 10
+                );
             }
         }catch (JsonProcessingException e){
             log.warn("Json 옵션 정보를 읽어들이는데 실패했습니다. 기본 옵션으로 동작합니다 - 입력 옵션 : {}, 필요 옵션 예 : {}", typeOptionJson, option);
