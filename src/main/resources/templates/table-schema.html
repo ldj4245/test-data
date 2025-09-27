@@ -433,11 +433,21 @@
     });
 
     schemaFieldList.on('updated', list => resetData(list));
-    document.getElementById('add-row').addEventListener('click', () => {
+    
+    // 통합된 필드 추가 함수
+    function addNewField() {
         schemaFieldList.add({});
-        const lastRow = schemaFieldList.items.at(-1).elm
+        const lastRow = schemaFieldList.items.at(-1).elm;
         enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
-    });
+        initOptionHelpTooltips();
+        initOptionsModalHandlers();
+        setTimeout(() => {
+            initFieldPreviewButtons();
+        }, 100);
+    }
+    
+    // 필드 추가 버튼 이벤트 핸들러 (단일 등록)
+    document.getElementById('add-row').addEventListener('click', addNewField);
 
     document.getElementById('export').addEventListener('click', async () => {
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -565,14 +575,7 @@
     }
 
     // 새 행 추가 후에도 도움말 툴팁이 작동하도록 설정
-    const originalAddRow = document.getElementById('add-row').onclick;
-    document.getElementById('add-row').onclick = function() {
-        if (originalAddRow) originalAddRow();
-        schemaFieldList.add({});
-        const lastRow = schemaFieldList.items.at(-1).elm;
-        enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
-        initOptionHelpTooltips();
-    };
+    // 필드 추가 함수 (중복 제거됨)
 
     // 초기 도움말 툴팁 설정
     document.addEventListener('DOMContentLoaded', function() {
@@ -809,16 +812,7 @@
         initOptionsModalHandlers();
     });
 
-    // 행 추가 시 이벤트 핸들러 재등록
-    const originalAddRowHandler = document.getElementById('add-row').onclick;
-    document.getElementById('add-row').onclick = function() {
-        if (typeof originalAddRowHandler === 'function') originalAddRowHandler();
-        schemaFieldList.add({});
-        const lastRow = schemaFieldList.items.at(-1).elm;
-        enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
-        initOptionHelpTooltips();
-        initOptionsModalHandlers();
-    };
+    // 중복 제거됨
 
     // 데이터 미리보기 탭 전환 기능
     document.addEventListener('DOMContentLoaded', function() {
@@ -1091,12 +1085,7 @@
         initFieldPreviewButtons();
     });
 
-    // 새 행 추가 시 처리
-    document.getElementById('add-row').addEventListener('click', () => {
-        setTimeout(() => {
-            initFieldPreviewButtons();
-        }, 100);
-    });
+    // 중복 제거됨
 </script>
 </body>
 </html>
