@@ -433,14 +433,10 @@
     });
 
     schemaFieldList.on('updated', list => resetData(list));
-
-    // 필드 추가 버튼 이벤트 핸들러 - 중복 제거
     document.getElementById('add-row').addEventListener('click', () => {
         schemaFieldList.add({});
         const lastRow = schemaFieldList.items.at(-1).elm
         enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
-        initOptionHelpTooltips();
-        initOptionsModalHandlers();
     });
 
     document.getElementById('export').addEventListener('click', async () => {
@@ -567,6 +563,21 @@
             });
         });
     }
+
+    // 새 행 추가 후에도 도움말 툴팁이 작동하도록 설정
+    const originalAddRow = document.getElementById('add-row').onclick;
+    document.getElementById('add-row').onclick = function() {
+        if (originalAddRow) originalAddRow();
+        schemaFieldList.add({});
+        const lastRow = schemaFieldList.items.at(-1).elm;
+        enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
+        initOptionHelpTooltips();
+    };
+
+    // 초기 도움말 툴팁 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        initOptionHelpTooltips();
+    });
 
     // 옵션 모달 다이얼로그 기능
     const optionsModal = document.getElementById('options-modal');
@@ -798,6 +809,17 @@
         initOptionsModalHandlers();
     });
 
+    // 행 추가 시 이벤트 핸들러 재등록
+    const originalAddRowHandler = document.getElementById('add-row').onclick;
+    document.getElementById('add-row').onclick = function() {
+        if (typeof originalAddRowHandler === 'function') originalAddRowHandler();
+        schemaFieldList.add({});
+        const lastRow = schemaFieldList.items.at(-1).elm;
+        enrollDeleteRowEvent(lastRow.querySelector('.delete-row'), schemaFieldList);
+        initOptionHelpTooltips();
+        initOptionsModalHandlers();
+    };
+
     // 데이터 미리보기 탭 전환 기능
     document.addEventListener('DOMContentLoaded', function() {
         const previewTabButtons = document.querySelectorAll('.preview-tab-btn');
@@ -843,52 +865,39 @@
                 previewRowCount: 5  // 미리보기는 5개 행으로 고정
             };
 
-            // 필드 정보 수집 - fieldOrder에 따라 정렬
-            const fieldElements = [];
+            // 필드 정보 수집
             const fieldNames = document.querySelectorAll('input[class*="field-name-name"]');
             const dataTypes = document.querySelectorAll('select[class*="data-type-name"]');
             const blankPercents = document.querySelectorAll('input[class*="blank-percent-name"]');
             const typeOptions = document.querySelectorAll('input[class*="type-option-name"]');
-            const fieldOrders = document.querySelectorAll('input[class*="field-order-value"]');
 
-            // 필드 정보를 배열로 수집
             for (let i = 0; i < fieldNames.length; i++) {
                 if (fieldNames[i].value) {
-                    fieldElements.push({
-                        index: i,
-                        fieldName: fieldNames[i].value,
-                        mockDataType: dataTypes[i].value,
-                        blankPercent: blankPercents[i].value || 0,
-                        typeOptionJson: typeOptions[i].value || '{}',
-                        fieldOrder: parseInt(fieldOrders[i].value) || (i + 1)
+                    // 각 필드 정보 추출
+                    const fieldName = fieldNames[i].value;
+                    const mockDataType = dataTypes[i].value;
+                    const blankPercent = blankPercents[i].value || 0;
+
+                    let typeOptionJson = '{}';
+                    try {
+                        // 옵션 값이 있으면 사용, 없으면 기본 빈 객체
+                        typeOptionJson = typeOptions[i].value || '{}';
+                        // 유효한 JSON인지 테스트
+                        JSON.parse(typeOptionJson);
+                    } catch (e) {
+                        console.warn('Invalid JSON option for field ' + fieldName, e);
+                        typeOptionJson = '{}';
+                    }
+
+                    previewRequestData.schemaFields.push({
+                        fieldName: fieldName,
+                        mockDataType: mockDataType,
+                        blankPercent: blankPercent,
+                        typeOptionJson: typeOptionJson,
+                        fieldOrder: i + 1
                     });
                 }
             }
-
-            // fieldOrder에 따라 정렬
-            fieldElements.sort((a, b) => a.fieldOrder - b.fieldOrder);
-
-            // 정렬된 순서로 schemaFields 구성
-            fieldElements.forEach((field, index) => {
-                let typeOptionJson = '{}';
-                try {
-                    // 옵션 값이 있으면 사용, 없으면 기본 빈 객체
-                    typeOptionJson = field.typeOptionJson || '{}';
-                    // 유효한 JSON인지 테스트
-                    JSON.parse(typeOptionJson);
-                } catch (e) {
-                    console.warn('Invalid JSON option for field ' + field.fieldName, e);
-                    typeOptionJson = '{}';
-                }
-
-                previewRequestData.schemaFields.push({
-                    fieldName: field.fieldName,
-                    mockDataType: field.mockDataType,
-                    blankPercent: field.blankPercent,
-                    typeOptionJson: typeOptionJson,
-                    fieldOrder: field.fieldOrder
-                });
-            });
 
             // API 호출하여 미리보기 데이터 가져오기
             const response = await fetch('/api/preview', {
@@ -1054,4 +1063,5 @@
 </script>
 </body>
 </html>
+
 

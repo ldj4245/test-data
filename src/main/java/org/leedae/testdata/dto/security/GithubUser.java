@@ -28,4 +28,6 @@ public record GithubUser(
     @Override public Map<String, Object> getAttributes() {return Map.of();}
     @Override public Collection<? extends GrantedAuthority> getAuthorities() {return List.of();}
     @Override public String getName() {return name.equals("null") ? id : name;}
+
+
 }
