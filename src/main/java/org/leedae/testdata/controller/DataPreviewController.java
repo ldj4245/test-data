@@ -1,7 +1,7 @@
 package org.leedae.testdata.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.leedae.testdata.dto.request.TableSchemaExportRequest;
+import org.leedae.testdata.domain.constant.MockDataType;
 import org.leedae.testdata.dto.request.TableSchemaPreviewRequest;
 import org.leedae.testdata.dto.response.DataPreviewResponse;
 import org.leedae.testdata.dto.security.GithubUser;
@@ -11,6 +11,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,5 +40,47 @@ public class DataPreviewController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 개별 필드에 대한 실시간 미리보기 데이터 생성
+     * 필드 타입과 옵션이 변경될 때마다 Ajax로 호출하여 샘플 데이터 표시
+     */
+    @PostMapping("/api/field-preview")
+    public ResponseEntity<Map<String, Object>> previewSingleField(
+            @AuthenticationPrincipal GithubUser githubUser,
+            @RequestBody Map<String, Object> fieldRequest) {
+
+        try {
+            String fieldName = (String) fieldRequest.get("fieldName");
+            String mockDataType = (String) fieldRequest.get("mockDataType");
+            Integer blankPercent = (Integer) fieldRequest.getOrDefault("blankPercent", 0);
+            String typeOptionJson = (String) fieldRequest.getOrDefault("typeOptionJson", "{}");
+
+            // 5개의 샘플 데이터 생성
+            List<String> samples = new ArrayList<>();
+            for (int i = 0; i < 5; i++) {
+                String sampleValue = dataPreviewService.generateSingleFieldValue(
+                        MockDataType.valueOf(mockDataType),
+                        blankPercent,
+                        typeOptionJson
+                );
+                samples.add(sampleValue);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("fieldName", fieldName);
+            response.put("samples", samples);
+            response.put("count", samples.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "필드 미리보기 생성 중 오류 발생: " + e.getMessage());
+            return ResponseEntity.ok(errorResponse);
+        }
     }
 }

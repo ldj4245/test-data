@@ -975,93 +975,121 @@
         }
     });
 
-    // 각 필드에 대한 미리보기 토글 기능
-    document.addEventListener('DOMContentLoaded', function() {
-        // 새 필드 추가 이벤트 등에서 이 함수를 호출해야 함
+    // 실시간 필드 미리보기 기능
+        function updateFieldPreview(card) {
+            const typeSelect = card.querySelector('select[class*="data-type-name"]');
+            const previewSection = card.querySelector('.preview-section');
+            const previewElement = card.querySelector('.field-preview');
+            const fieldNameInput = card.querySelector('input[class*="field-name-name"]');
+            const blankPercentInput = card.querySelector('input[class*="blank-percent-name"]');
+            const typeOptionInput = card.querySelector('input[class*="type-option-name"]');
+
+            if (!typeSelect || !previewSection || !previewElement) return;
+
+            const selectedType = typeSelect.value;
+            const fieldName = fieldNameInput.value || '필드명';
+            const blankPercent = parseInt(blankPercentInput.value) || 0;
+            const typeOptionJson = typeOptionInput.value || '{}';
+
+            // 미리보기 섹션 표시
+            previewSection.classList.remove('hidden');
+            previewElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 생성 중...';
+
+            // API 호출하여 실제 샘플 데이터 가져오기
+            fetch('/api/field-preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fieldName: fieldName,
+                    mockDataType: selectedType,
+                    blankPercent: blankPercent,
+                    typeOptionJson: typeOptionJson
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.samples) {
+                    // 5개 샘플 중 3개만 표시 (UI 공간 절약)
+                    const displaySamples = data.samples.slice(0, 3);
+                    previewElement.innerHTML = displaySamples.map(sample =>
+                        `<span class="inline-block bg-gray-100 px-2 py-1 rounded text-xs mr-1 mb-1">${sample}</span>`
+                    ).join('');
+                } else {
+                    previewElement.textContent = data.message || '미리보기 생성 실패';
+                }
+            })
+            .catch(error => {
+                console.error('필드 미리보기 오류:', error);
+                previewElement.textContent = '네트워크 오류 발생';
+            });
+        }
+
+        // 디바운스 함수 (너무 빠른 연속 호출 방지)
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 디바운스된 미리보기 업데이트 함수
+        const debouncedUpdatePreview = debounce(updateFieldPreview, 500);
+
+        // 필드별 미리보기 이벤트 리스너 설정
         function initFieldPreviewButtons() {
             document.querySelectorAll('.field-card').forEach(card => {
                 const typeSelect = card.querySelector('select[class*="data-type-name"]');
-                const previewSection = card.querySelector('.preview-section');
+                const fieldNameInput = card.querySelector('input[class*="field-name-name"]');
+                const blankPercentInput = card.querySelector('input[class*="blank-percent-name"]');
+                const typeOptionInput = card.querySelector('input[class*="type-option-name"]');
 
-                if (typeSelect && previewSection) {
-                    typeSelect.addEventListener('change', function() {
-                        updateFieldPreview(card);
-                    });
+                if (typeSelect) {
+                    // 타입 변경 시 즉시 미리보기 업데이트
+                    typeSelect.addEventListener('change', () => updateFieldPreview(card));
+                }
 
-                    // 초기 미리보기 표시
+                if (fieldNameInput) {
+                    // 필드명 변경 시 디바운스된 미리보기 업데이트
+                    fieldNameInput.addEventListener('input', () => debouncedUpdatePreview(card));
+                }
+
+                if (blankPercentInput) {
+                    // Null 비율 변경 시 디바운스된 미리보기 업데이트
+                    blankPercentInput.addEventListener('input', () => debouncedUpdatePreview(card));
+                }
+
+                if (typeOptionInput) {
+                    // 옵션 변경 시 디바운스된 미리보기 업데이트
+                    typeOptionInput.addEventListener('input', () => debouncedUpdatePreview(card));
+                }
+
+                // 초기 미리보기 표시 (타입이 선택된 경우에만)
+                if (typeSelect.value) {
                     updateFieldPreview(card);
                 }
             });
         }
 
-        function updateFieldPreview(card) {
-            const typeSelect = card.querySelector('select[class*="data-type-name"]');
-            const previewSection = card.querySelector('.preview-section');
-            const previewElement = card.querySelector('.field-preview');
+    // 초기화
+    initFieldPreviewButtons();
 
-            if (!typeSelect || !previewSection || !previewElement) return;
+    // 새 행 추가 시 처리
+    const originalAddRowHandler = document.getElementById('add-row').onclick;
+    document.getElementById('add-row').onclick = function() {
+        if (typeof originalAddRowHandler === 'function') originalAddRowHandler();
 
-            const selectedType = typeSelect.value;
-
-            // 미리보기 섹션 표시
-            previewSection.classList.remove('hidden');
-
-            // 타입에 따른 샘플 데이터 표시
-            let sampleData = "예시 데이터 없음";
-
-            switch (selectedType) {
-                case 'STRING':
-                    sampleData = '랜덤 문자열';
-                    break;
-                case 'NUMBER':
-                    sampleData = Math.floor(Math.random() * 100);
-                    break;
-                case 'BOOLEAN':
-                    sampleData = Math.random() > 0.5 ? 'true' : 'false';
-                    break;
-                case 'DATETIME':
-                    sampleData = new Date().toISOString().split('T')[0];
-                    break;
-                case 'KOREAN_NAME':
-                    sampleData = ['김철수', '이영희', '박지민', '최유진'][Math.floor(Math.random() * 4)];
-                    break;
-                case 'KOREAN_ADDRESS':
-                    sampleData = '서울시 강남구 테헤란로 123길 45';
-                    break;
-                case 'KOREAN_PHONE':
-                    sampleData = '010-1234-5678';
-                    break;
-                case 'EMAIL':
-                    sampleData = 'example@example.com';
-                    break;
-                case 'CAR':
-                    sampleData = '2023년형 현대 쏘나타';
-                    break;
-                case 'ROW_NUMBER':
-                    sampleData = '1, 2, 3...';
-                    break;
-                default:
-                    sampleData = '예시 데이터';
-            }
-
-            previewElement.textContent = sampleData;
-        }
-
-        // 초기화
-        initFieldPreviewButtons();
-
-        // 새 행 추가 시 처리
-        const originalAddRowHandler = document.getElementById('add-row').onclick;
-        document.getElementById('add-row').onclick = function() {
-            if (typeof originalAddRowHandler === 'function') originalAddRowHandler();
-
-            setTimeout(() => {
-                initFieldPreviewButtons();
-            }, 100);
-        };
-    });
+        setTimeout(() => {
+            initFieldPreviewButtons();
+        }, 100);
+    };
 </script>
 </body>
 </html>
-
 

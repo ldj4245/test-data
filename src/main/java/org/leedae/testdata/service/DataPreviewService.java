@@ -2,7 +2,6 @@ package org.leedae.testdata.service;
 
 import lombok.RequiredArgsConstructor;
 import org.leedae.testdata.domain.constant.MockDataType;
-import org.leedae.testdata.dto.MockDataDto;
 import org.leedae.testdata.dto.SchemaFieldDto;
 import org.leedae.testdata.dto.TableSchemaDto;
 import org.leedae.testdata.dto.response.DataPreviewResponse;
@@ -71,6 +70,28 @@ public class DataPreviewService {
                     .success(false)
                     .message("데이터 생성 중 오류가 발생했습니다: " + e.getMessage())
                     .build();
+        }
+    }
+
+    /**
+     * 단일 필드에 대한 값을 생성합니다.
+     * 개별 필드 미리보기에서 사용됩니다.
+     *
+     * @param dataType 데이터 타입
+     * @param blankPercent 빈 값 비율
+     * @param typeOptionJson 타입 옵션 JSON
+     * @return 생성된 값
+     */
+    public String generateSingleFieldValue(MockDataType dataType, Integer blankPercent, String typeOptionJson) {
+        try {
+            return mockDataGeneratorContext.generate(
+                    dataType,
+                    blankPercent,
+                    typeOptionJson,
+                    null // forceValue는 미리보기에서는 사용하지 않음
+            );
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
     }
 }
