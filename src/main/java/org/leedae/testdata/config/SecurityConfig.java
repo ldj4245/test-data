@@ -30,7 +30,8 @@ public class SecurityConfig {
                                         "/table-schema/export"
                                 ).permitAll()
                                 .requestMatchers(
-                                        "/api/preview"
+                                        "/api/preview",
+                                        "/api/field-preview"
                                 ).permitAll()  // HttpMethod 제한 없이 모든 메서드 허용
                                 .anyRequest().authenticated()
 
