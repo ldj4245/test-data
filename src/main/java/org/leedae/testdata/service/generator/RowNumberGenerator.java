@@ -58,13 +58,19 @@ public class RowNumberGenerator implements MockDataGenerator {
             log.warn("Json 옵션 정보를 읽어들이는데 실패했습니다. 기본 옵션으로 동작합니다 - 입력 옵션 : {}, 필요 옵션 예 : {}", typeOptionJson, option);
         }
 
-        // 스키마 식별용 키 생성 (스키마명이 제공되지 않으면 "default" 사용)
-        String schemaKey = option.schemaName != null ? option.schemaName : "default";
+        // 스키마 식별용 키 생성
+        String schemaKey;
+        if (option.schemaName != null && !option.schemaName.isBlank()) {
+            schemaKey = option.schemaName;
+        } else {
+            // 스키마명이 없으면 옵션 기반 키 생성 (동일한 옵션이면 연속된 번호 사용)
+            schemaKey = "default_start" + option.start + "_step" + option.step;
+        }
 
         // option.start 값을 final 변수에 저장하여 lambda에서 참조할 수 있게 함
         final int startValue = option.start;
-
-        // 현재 행 번호 계산
+        
+        // 현재 행 번호 계산 - 해당 스키마의 현재 값 또는 시작값 사용
         Integer currentRowNumber = SCHEMA_ROW_COUNTERS.computeIfAbsent(schemaKey, k -> startValue);
 
         // 현재 행 번호 반환 후 다음 번호 계산을 위해 증가
