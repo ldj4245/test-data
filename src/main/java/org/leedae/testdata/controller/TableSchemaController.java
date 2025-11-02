@@ -62,6 +62,7 @@ public class TableSchemaController {
     ) {
         tableSchemaService.upsertTableSchema(tableSchemaRequest.toDto(githubUser.id()));
         redirectAttrs.addAttribute("schemaName", tableSchemaRequest.getSchemaName());
+        redirectAttrs.addAttribute("saved", "true");
         //addFlashAttribute는 저장된 정보를 그대로 보여줘야 하므로 사용했음.
         
         return "redirect:/table-schema";
