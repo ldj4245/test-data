@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>테스트 데이터 생성기 - 내 스키마 목록</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
@@ -22,13 +44,13 @@
 
 <header class="bg-white shadow">
   <div class="container mx-auto px-4 py-6 flex justify-between items-center">
-    <a th:href="@{/}" class="text-2xl font-bold text-sky-600">테스트 데이터 생성기</a>
+    <a th:href="@{/}" class="text-2xl font-bold text-primary-600">테스트 데이터 생성기</a>
     <nav>
-      <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-sky-600 mx-2">내 스키마</a>
-      <a th:href="@{/my-account}" class="text-gray-600 hover:text-sky-600 mx-2">내 정보</a>
+      <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-primary-600 mx-2">내 스키마</a>
+      <a th:href="@{/my-account}" class="text-gray-600 hover:text-primary-600 mx-2">내 정보</a>
 
-      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
-      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2">
+      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
+      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2">
         <span sec:authentication="principal.name" class="text-gray-400 text-sm mx-1">username</span>
         로그아웃
       </a>
@@ -40,7 +62,7 @@
   <section class="mb-8">
     <h1 class="text-4xl font-bold text-gray-600 mb-6 text-left">내 스키마</h1>
     <div class="flex justify-start space-x-4">
-      <a th:href="@{/table-schema}" class="bg-sky-600 text-white py-2 px-4 rounded hover:bg-sky-700">스키마 만들기</a>
+      <a th:href="@{/table-schema}" class="bg-primary-600 text-white py-2 px-4 rounded hover:bg-primary-700">스키마 만들기</a>
     </div>
   </section>
 
@@ -49,7 +71,7 @@
       <h2 class="text-xl font-semibold text-gray-700">스키마 목록</h2>
       <div class="flex space-x-2">
         <input type="search" placeholder="스키마 이름 검색.." class="search border-gray-300 rounded-md shadow-sm px-2 py-1">
-        <button data-sort="schema-name" class="sort bg-sky-600 text-white py-1 px-4 rounded hover:bg-sky-700">이름순 정렬</button>
+        <button data-sort="schema-name" class="sort bg-primary-600 text-white py-1 px-4 rounded hover:bg-primary-700">이름순 정렬</button>
       </div>
     </div>
 
@@ -65,14 +87,30 @@
         </tr>
         </thead>
         <tbody class="list bg-white divide-y divide-gray-200">
+        <!-- 빈 상태 -->
+        <tr th:if="${#lists.isEmpty(tableSchemas)}">
+          <td colspan="3" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center">
+              <i class="fas fa-inbox text-gray-400 text-5xl mb-4"></i>
+              <p class="text-gray-500 text-lg mb-2">저장된 스키마가 없습니다</p>
+              <p class="text-gray-400 text-sm mb-4">새로운 스키마를 만들어보세요!</p>
+              <a th:href="@{/table-schema}" class="bg-primary-600 text-white py-2 px-4 rounded hover:bg-primary-700 inline-block">
+                <i class="fas fa-plus mr-2"></i>스키마 만들기
+              </a>
+            </div>
+          </td>
+        </tr>
+        <!-- 스키마 목록 -->
         <tr th:each="tableSchema : ${tableSchemas}">
           <td class="schema-name px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:underline">
             <a th:href="@{/table-schema(schemaName=${tableSchema.schemaName})}" th:text="${tableSchema.schemaName}">sample_schema</a>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${tableSchema.modifiedAt}">-</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${#temporals.format(tableSchema.modifiedAt, 'yyyy-MM-dd HH:mm')}">-</td>
           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <form th:action="@{/table-schema/my-schemas/{schemaName}(schemaName=${tableSchema.schemaName})}" method="post" class="inline">
-              <button type="submit" class="text-red-600"><i class="fas fa-trash-alt"></i></button>
+            <button type="button" onclick="confirmDelete('${tableSchema.schemaName}')" class="text-red-600 hover:text-red-800">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+            <form id="delete-form-${tableSchema.schemaName}" th:action="@{/table-schema/my-schemas/{schemaName}(schemaName=${tableSchema.schemaName})}" method="post" class="hidden">
             </form>
           </td>
         </tr>
@@ -88,8 +126,52 @@
   </div>
 </footer>
 
+<!-- 삭제 확인 모달 -->
+<div id="delete-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white shadow-lg rounded-lg p-6 max-w-md w-full mx-4">
+    <div class="flex items-center mb-4">
+      <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mr-3"></i>
+      <h3 class="text-lg font-bold text-gray-800">스키마 삭제 확인</h3>
+    </div>
+    <p class="text-gray-600 mb-6">
+      정말로 <span id="delete-schema-name" class="font-bold"></span> 스키마를 삭제하시겠습니까?<br>
+      이 작업은 되돌릴 수 없습니다.
+    </p>
+    <div class="flex justify-end space-x-3">
+      <button onclick="closeDeleteModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">취소</button>
+      <button onclick="executeDelete()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">삭제</button>
+    </div>
+  </div>
+</div>
+
 <script>
     const mySchema = new List('my-schemas', { valueNames: [ 'schema-name' ]});
+    
+    let deleteSchemaName = '';
+    
+    function confirmDelete(schemaName) {
+        deleteSchemaName = schemaName;
+        document.getElementById('delete-schema-name').textContent = schemaName;
+        document.getElementById('delete-modal').classList.remove('hidden');
+    }
+    
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').classList.add('hidden');
+        deleteSchemaName = '';
+    }
+    
+    function executeDelete() {
+        if (deleteSchemaName) {
+            document.getElementById('delete-form-' + deleteSchemaName).submit();
+        }
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('delete-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
 </script>
 </body>
 </html>

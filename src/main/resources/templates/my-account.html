@@ -5,19 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>테스트 데이터 생성기 - 내 정보</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 text-gray-900 flex flex-col min-h-screen">
 
 <header class="bg-white shadow">
   <div class="container mx-auto px-4 py-6 flex justify-between items-center">
-    <a th:href="@{/}" class="text-2xl font-bold text-sky-600">테스트 데이터 생성기</a>
+    <a th:href="@{/}" class="text-2xl font-bold text-primary-600">테스트 데이터 생성기</a>
     <nav>
-      <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-sky-600 mx-2">내 스키마</a>
-      <a th:href="@{/my-account}" class="text-gray-600 hover:text-sky-600 mx-2">내 정보</a>
+      <a th:href="@{/table-schema/my-schemas}" class="text-gray-600 hover:text-primary-600 mx-2">내 스키마</a>
+      <a th:href="@{/my-account}" class="text-gray-600 hover:text-primary-600 mx-2">내 정보</a>
 
-      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
-      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-sky-600 mx-2">
+      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
+      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2">
         <span sec:authentication="principal.name" class="text-gray-400 text-sm mx-1">username</span>
         로그아웃
       </a>
