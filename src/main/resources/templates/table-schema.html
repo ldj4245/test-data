@@ -133,11 +133,12 @@
                   </div>
 
                   <!-- 옵션 -->
-                  <div class="md:w-1/4">
-                    <div class="relative">
-                      <input type="text" th:field="*{schemaFields[__${iterStat.index}__].typeOptionJson}" class="type-option-id type-option-name mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500" placeholder="{}">
-                      <i class="option-help fas fa-cog text-gray-500 hover:text-primary-600 cursor-pointer absolute right-3 top-1/2 transform -translate-y-1/2"></i>
-                    </div>
+                  <div class="md:w-1/4 flex gap-2">
+                    <input type="text" th:field="*{schemaFields[__${iterStat.index}__].typeOptionJson}" class="type-option-id type-option-name mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm" placeholder="{}" readonly style="background-color: #f9fafb;">
+                    <button type="button" class="option-help mt-1 px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 whitespace-nowrap text-sm flex items-center gap-1">
+                      <i class="fas fa-sliders-h"></i>
+                      <span class="hidden sm:inline">설정</span>
+                    </button>
                   </div>
 
                   <!-- 삭제 버튼 -->

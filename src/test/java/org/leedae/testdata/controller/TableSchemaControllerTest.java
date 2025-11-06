@@ -111,7 +111,7 @@ class TableSchemaControllerTest {
                                 .with(oauth2Login().oauth2User(githubUser))
                 )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlTemplate("/table-schema?schemaName={schemaName}", request.getSchemaName()));
+                .andExpect(redirectedUrlTemplate("/table-schema?schemaName={schemaName}&saved=true", request.getSchemaName()));
         then(tableSchemaService).should().upsertTableSchema(request.toDto(githubUser.id()));
     }
 
