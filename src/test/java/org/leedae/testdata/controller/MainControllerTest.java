@@ -22,16 +22,16 @@ record MainControllerTest(
         @Autowired MockMvc mvc
 ) {
 
-    @DisplayName("[GET] 메인(루트) 페이지 -> 테이블 스키마 페이지로 포워딩 (정상)")
+    @DisplayName("[GET] 메인(루트) 페이지 -> 인덱스 페이지 렌더링 (정상)")
     @Test
-    void givenNothing_whenEnteringRootPage_thenForwardsToTableSchemaPage() throws Exception {
+    void givenNothing_whenEnteringRootPage_thenShowsIndexPage() throws Exception {
         //Given
 
 
         //When & Then
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(forwardedUrl("/table-schema"));
+                .andExpect(view().name("index"));
     }
 
 
