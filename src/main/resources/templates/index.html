@@ -1,10 +1,320 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>메인 페이지</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테스트 데이터 생성기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
-<body>
-메인 페이지
+<body class="bg-gray-50 text-gray-900">
+
+<header class="bg-white shadow">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a th:href="@{/}" class="text-2xl font-bold text-primary-600">테스트 데이터 생성기</a>
+    <nav>
+      <a th:href="@{/table-schema}" class="text-gray-600 hover:text-primary-600 mx-2">시작하기</a>
+      <a th:href="@{/table-schema/my-schemas}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2">내 스키마</a>
+      <a th:href="@{/my-account}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2">내 정보</a>
+      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2"><i class="fab fa-github"></i> 로그인</a>
+      <a th:href="@{/logout}" sec:authorize="isAuthenticated()" class="text-gray-600 hover:text-primary-600 mx-2">로그아웃</a>
+    </nav>
+  </div>
+</header>
+
+<!-- 히어로 섹션 -->
+<section class="bg-gradient-to-br from-primary-50 to-blue-50 py-20">
+  <div class="container mx-auto px-4 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+      테스트 데이터, 더 쉽게 만들어보세요
+    </h1>
+    <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+      복잡한 스키마 설정 없이 간단하게 원하는 형식의 테스트 데이터를 생성하고<br>
+      CSV, JSON, Excel 등 다양한 파일로 바로 내려받을 수 있습니다
+    </p>
+    <div class="flex justify-center gap-4">
+      <a th:href="@{/table-schema}" class="bg-primary-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-primary-700 transition">
+        <i class="fas fa-play mr-2"></i>바로 시작하기
+      </a>
+      <a href="#features" class="bg-white text-primary-600 px-8 py-3 rounded-lg text-lg border-2 border-primary-600 hover:bg-primary-50 transition">
+        기능 살펴보기
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 주요 기능 -->
+<section id="features" class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">무엇을 할 수 있나요?</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- 기능 1 -->
+      <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition">
+        <div class="text-primary-600 text-4xl mb-4">
+          <i class="fas fa-table"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-3">간편한 스키마 설정</h3>
+        <p class="text-gray-600 mb-4">
+          필드 이름과 타입을 선택하면 끝. 드래그로 순서도 바꿀 수 있고, 
+          필요한 옵션만 선택하면 됩니다.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-1">
+          <li><i class="fas fa-check text-green-500 mr-2"></i>15가지 데이터 타입 지원</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>한국어 특화 타입 포함</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>드래그로 필드 순서 변경</li>
+        </ul>
+      </div>
+
+      <!-- 기능 2 -->
+      <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition">
+        <div class="text-primary-600 text-4xl mb-4">
+          <i class="fas fa-eye"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-3">실시간 미리보기</h3>
+        <p class="text-gray-600 mb-4">
+          데이터를 만들기 전에 어떻게 나올지 미리 확인할 수 있어요.
+          테이블, JSON, SQL 형식으로 바로 볼 수 있습니다.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-1">
+          <li><i class="fas fa-check text-green-500 mr-2"></i>필드별 샘플 즉시 확인</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>3가지 뷰 모드 지원</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>로그인 없이도 사용 가능</li>
+        </ul>
+      </div>
+
+      <!-- 기능 3 -->
+      <div class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition">
+        <div class="text-primary-600 text-4xl mb-4">
+          <i class="fas fa-download"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-3">다양한 형식으로 내보내기</h3>
+        <p class="text-gray-600 mb-4">
+          생성한 데이터를 원하는 파일 형식으로 바로 다운로드할 수 있어요.
+          DB 작업이나 개발 테스트에 바로 쓸 수 있습니다.
+        </p>
+        <ul class="text-sm text-gray-500 space-y-1">
+          <li><i class="fas fa-check text-green-500 mr-2"></i>CSV, TSV, JSON, XML</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>SQL INSERT 문</li>
+          <li><i class="fas fa-check text-green-500 mr-2"></i>Excel 파일(.xlsx)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 지원 데이터 타입 -->
+<section class="py-16 bg-gray-50">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">어떤 데이터를 만들 수 있나요?</h2>
+    <p class="text-center text-gray-600 mb-12">기본 타입부터 한국어 특화 데이터까지 다양하게 지원합니다</p>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white rounded-lg p-4">
+        <h4 class="font-bold text-gray-700 mb-3 flex items-center">
+          <i class="fas fa-cube text-primary-500 mr-2"></i>기본 타입
+        </h4>
+        <div class="space-y-1 text-sm text-gray-600">
+          <div>문자열, 숫자, 날짜</div>
+          <div>불리언, 열거형</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg p-4">
+        <h4 class="font-bold text-gray-700 mb-3 flex items-center">
+          <i class="fas fa-align-left text-primary-500 mr-2"></i>텍스트
+        </h4>
+        <div class="space-y-1 text-sm text-gray-600">
+          <div>문장, 단락</div>
+          <div>이메일, UUID</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg p-4">
+        <h4 class="font-bold text-gray-700 mb-3 flex items-center">
+          <i class="fas fa-user text-primary-500 mr-2"></i>개인정보
+        </h4>
+        <div class="space-y-1 text-sm text-gray-600">
+          <div>이름(영문/한글)</div>
+          <div>이메일 주소</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg p-4">
+        <h4 class="font-bold text-gray-700 mb-3 flex items-center">
+          <i class="fas fa-flag text-primary-500 mr-2"></i>한국어 특화
+        </h4>
+        <div class="space-y-1 text-sm text-gray-600">
+          <div>한국인 이름, 주소</div>
+          <div>전화번호 형식</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 사용 방법 -->
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">간단한 3단계로 완성</h2>
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-col md:flex-row items-center gap-8 mb-8">
+        <div class="flex-shrink-0 w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+          1
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">필드 정의하기</h3>
+          <p class="text-gray-600">
+            필드 이름을 정하고 데이터 타입을 선택하세요. 
+            필요하면 옵션을 조금 수정할 수도 있어요.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center gap-8 mb-8">
+        <div class="flex-shrink-0 w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+          2
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">미리보기 확인</h3>
+          <p class="text-gray-600">
+            만들어질 데이터가 어떻게 나오는지 바로 확인하세요.
+            괜찮으면 다음 단계로 넘어가면 됩니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center gap-8">
+        <div class="flex-shrink-0 w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+          3
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">파일로 받기</h3>
+          <p class="text-gray-600">
+            몇 개의 행이 필요한지 정하고, 원하는 파일 형식을 선택해서 다운로드하세요.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-12">
+      <a th:href="@{/table-schema}" class="bg-primary-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-primary-700 transition inline-block">
+        지금 시작하기
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 로그인 안내 -->
+<section class="py-16 bg-primary-50">
+  <div class="container mx-auto px-4 text-center">
+    <div class="max-w-2xl mx-auto">
+      <i class="fab fa-github text-5xl text-gray-700 mb-4"></i>
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">스키마를 저장하고 관리하려면?</h2>
+      <p class="text-gray-600 mb-6">
+        GitHub 계정으로 로그인하면 만든 스키마를 저장하고 언제든 다시 불러올 수 있어요.
+        물론 로그인 없이도 데이터 생성과 다운로드는 가능합니다.
+      </p>
+      <a th:href="@{/oauth2/authorization/github}" sec:authorize="!isAuthenticated()" class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition inline-block">
+        <i class="fab fa-github mr-2"></i>GitHub로 로그인
+      </a>
+      <a th:href="@{/table-schema/my-schemas}" sec:authorize="isAuthenticated()" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition inline-block">
+        <i class="fas fa-folder mr-2"></i>내 스키마 보기
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 실제 사용 예시 -->
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">이럴 때 유용해요</h2>
+    <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-8">
+      <div class="text-center">
+        <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-code text-primary-600 text-2xl"></i>
+        </div>
+        <h4 class="font-bold text-gray-800 mb-2">개발 테스트</h4>
+        <p class="text-sm text-gray-600">
+          API 개발이나 UI 작업할 때 필요한 샘플 데이터를 빠르게 만들어요
+        </p>
+      </div>
+
+      <div class="text-center">
+        <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-database text-primary-600 text-2xl"></i>
+        </div>
+        <h4 class="font-bold text-gray-800 mb-2">DB 초기 데이터</h4>
+        <p class="text-sm text-gray-600">
+          데이터베이스를 처음 세팅할 때 필요한 더미 데이터를 SQL로 바로 받아요
+        </p>
+      </div>
+
+      <div class="text-center">
+        <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-vial text-primary-600 text-2xl"></i>
+        </div>
+        <h4 class="font-bold text-gray-800 mb-2">QA 시나리오</h4>
+        <p class="text-sm text-gray-600">
+          다양한 경우의 수를 테스트할 데이터를 원하는 만큼 빠르게 생성해요
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 지원 포맷 -->
+<section class="py-16 bg-gray-50">
+  <div class="container mx-auto px-4 text-center">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8">다양한 파일 형식 지원</h2>
+    <div class="flex flex-wrap justify-center gap-4 max-w-3xl mx-auto">
+      <span class="bg-white px-6 py-3 rounded-lg shadow-sm text-gray-700 font-medium">CSV</span>
+      <span class="bg-white px-6 py-3 rounded-lg shadow-sm text-gray-700 font-medium">TSV</span>
+      <span class="bg-white px-6 py-3 rounded-lg shadow-sm text-gray-700 font-medium">JSON</span>
+      <span class="bg-white px-6 py-3 rounded-lg shadow-sm text-gray-700 font-medium">XML</span>
+      <span class="bg-white px-6 py-3 rounded-lg shadow-sm text-gray-700 font-medium">SQL INSERT</span>
+      <span class="bg-white px-6 py-3 rounded-lg shadow-sm text-gray-700 font-medium">Excel (.xlsx)</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-20 bg-gradient-to-br from-primary-600 to-blue-700 text-white">
+  <div class="container mx-auto px-4 text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6">지금 바로 시작해보세요</h2>
+    <p class="text-lg mb-8 opacity-90">로그인 없이도 사용할 수 있어요</p>
+    <a th:href="@{/table-schema}" class="bg-white text-primary-600 px-10 py-4 rounded-lg text-lg font-bold hover:bg-gray-100 transition inline-block">
+      <i class="fas fa-rocket mr-2"></i>무료로 시작하기
+    </a>
+  </div>
+</section>
+
+<footer class="bg-white shadow w-full">
+  <div class="container mx-auto px-4 py-6 text-center text-gray-600">
+    © 2024 GenieLee, Inc
+  </div>
+</footer>
+
 </body>
 </html>
